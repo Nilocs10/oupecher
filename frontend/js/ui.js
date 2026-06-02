@@ -20,6 +20,7 @@ async function openWaterBodyPanel(id, name) {
   try {
     const data = await getWaterBodyDetail(id);
     renderPanel(data);
+    if (typeof loadRatings !== "undefined") loadRatings(data.id);
   } catch (err) {
     panelBody.innerHTML = `<p style="color:red">Erreur lors du chargement.</p>`;
     console.error(err);
@@ -117,7 +118,16 @@ function buildInfoHTML(wb) {
 
   const permitHTML = buildPermitHTML(wb);
 
+  // Navigation GPS
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${wb.latitude},${wb.longitude}`;
+  const waze  = `https://waze.com/ul?ll=${wb.latitude},${wb.longitude}&navigate=yes`;
+
   return `
+    <div class="panel-section rating-section">
+      <h3>Note</h3>
+      <div class="rating-avg-row" id="rating-avg"><span class="rating-loading">Chargement…</span></div>
+      <div class="rating-user-row" id="rating-user"></div>
+    </div>
     <div class="panel-section">
       <h3>Espèces présentes</h3>
       <div class="tags">${fishTags}</div>
@@ -129,6 +139,13 @@ function buildInfoHTML(wb) {
     <div class="panel-section">
       <h3>Techniques autorisées</h3>
       <div class="tags">${techniqueTags}</div>
+    </div>
+    <div class="panel-section">
+      <h3>Itinéraire</h3>
+      <div class="nav-btns">
+        <a href="${gmaps}" target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn--gmaps">Google Maps →</a>
+        <a href="${waze}"  target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn--waze">Waze →</a>
+      </div>
     </div>
   `;
 }
