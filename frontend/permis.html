@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permis de pêche – OùPêcher</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #050e14;
+      --surface:    #0a1929;
+      --surface-2:  #0f2436;
+      --border:     #1a3a50;
+      --blue:       #2e8fa8;
+      --blue-light: #4db8d4;
+      --blue-glow:  rgba(46, 143, 168, 0.18);
+      --text:       #e0eff5;
+      --text-muted: #6b9aaa;
+      --heading:    #c8e8f0;
+      --radius:     12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 { font-family: 'Lora', serif; color: var(--heading); line-height: 1.25; }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5, 14, 20, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--blue-light);
+      letter-spacing: -0.01em;
+      text-decoration: none;
+    }
+    .logo span { color: var(--text-muted); font-weight: 400; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-link {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+    .header-link:hover, .header-link.active { color: var(--blue-light); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--blue-light);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-ghost:hover { border-color: var(--blue); background: var(--blue-glow); }
+
+    /* Auth nav (auth.js populates #auth-nav) */
+    .auth-name { font-size: 0.82rem; color: var(--text-muted); }
+
+    .auth-btn-login {
+      background: var(--blue-glow);
+      color: var(--blue-light);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .auth-btn-login:hover { background: rgba(46, 143, 168, 0.28); }
+
+    .auth-btn-logout {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .auth-btn-logout:hover { color: var(--text); border-color: var(--text-muted); }
+
+    /* ── Page hero ── */
+    .page-hero {
+      padding: 4rem 0 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(46, 143, 168, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(46, 143, 168, 0.1);
+      border: 1px solid rgba(46, 143, 168, 0.3);
+      border-radius: 999px;
+      padding: 0.28rem 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .page-hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: #daeef5;
+      margin-bottom: 0.9rem;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Main content ── */
+    #permits-main { padding: 2.5rem 1.5rem 4rem; }
+
+    .status-msg {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .status-msg.error { color: #fca5a5; }
+    .hidden { display: none !important; }
+
+    /* ── Permit sections ── */
+    .permit-section { margin-bottom: 3.5rem; }
+
+    .permit-section-header {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .permit-section-header h2 {
+      font-size: 1.35rem;
+      white-space: nowrap;
+      color: var(--heading);
+    }
+
+    .permit-section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* ── Permit grid ── */
+    .permit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 900px) { .permit-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .permit-grid { grid-template-columns: 1fr; } }
+
+    /* ── Permit card ── */
+    .permit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .permit-card:hover {
+      border-color: rgba(46, 143, 168, 0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+    }
+
+    .permit-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .permit-card-name {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--heading);
+      line-height: 1.3;
+    }
+
+    .permit-price-badge {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: #fbbf24;
+      border-radius: 8px;
+      padding: 0.25rem 0.65rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .permit-card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .permit-card-footer { margin-top: auto; }
+
+    .btn-buy {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      background: rgba(46, 143, 168, 0.12);
+      border: 1.5px solid var(--blue);
+      color: var(--blue-light);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-buy:hover { background: rgba(46, 143, 168, 0.24); color: #fff; }
+
+    .btn-buy--disabled {
+      border-color: var(--border);
+      color: var(--text-muted);
+      cursor: default;
+      pointer-events: none;
+    }
+    .btn-buy--disabled:hover { background: rgba(46, 143, 168, 0.12); color: var(--text-muted); }
+
+    /* ── Note société privée ── */
+    .notice-section {
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 4rem;
+    }
+
+    .notice-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid rgba(46, 143, 168, 0.25);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .notice-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .notice-card h3 {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--blue-light);
+    }
+
+    .notice-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      color: var(--blue-light);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-copy { font-size: 0.78rem; color: var(--text-muted); }
+
+    @media (max-width: 640px) {
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .permit-section-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+      .permit-section-line { display: none; }
+      .notice-card { flex-direction: column; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header>
+    <nav class="container">
+      <a href="landing.html" class="logo">OùPêcher<span> ·</span></a>
+      <div class="nav-right">
+        <a href="permis.html" class="header-link active">Permis</a>
+        <a href="index.html" class="btn-ghost">Voir la carte →</a>
+        <div id="auth-nav"></div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── Hero ── -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-eyebrow">Belgique &amp; France</div>
+      <h1>Permis de pêche</h1>
+      <p class="hero-sub">
+        Tous les permis nécessaires pour pêcher légalement, classés par région.
+        Choisissez le bon type selon votre zone et vos pratiques.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Content ── -->
+  <main id="permits-main" class="container">
+    <p id="permits-loading" class="status-msg">Chargement des permis…</p>
+    <p id="permits-error"   class="status-msg error hidden">Impossible de charger les permis. Vérifiez la connexion au serveur.</p>
+    <div id="permits-content" class="hidden"></div>
+  </main>
+
+  <!-- ── Note société privée ── -->
+  <section class="notice-section">
+    <div class="container">
+      <div class="notice-card">
+        <div class="notice-icon">ℹ</div>
+        <div>
+          <h3>Société de pêche locale</h3>
+          <p>
+            Certains cours d'eau et plans d'eau sont gérés par une société de pêche privée.
+            En plus du permis régional (Wallonie A/B/C ou Sportvisakte flamand), une carte de
+            membre ou un droit de pêche journalier auprès de cette société peut être exigé.
+            Cette information est précisée sur la fiche de chaque spot — repérez le badge
+            <strong style="color:#fbbf24">⚠ Permis régional + [nom société]</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logo">OùPêcher</div>
+      <ul class="footer-links">
+        <li><a href="landing.html#features">Fonctionnalités</a></li>
+        <li><a href="permis.html">Permis</a></li>
+        <li><a href="index.html">Carte</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <p class="footer-copy">© 2025 OùPêcher · Belgique &amp; France</p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function safeUrl(url) {
+      try {
+        const u = new URL(url);
+        return (u.protocol === "http:" || u.protocol === "https:") ? url : "#";
+      } catch { return "#"; }
+    }
+
+    function groupPermits(permits) {
+      const ORDER = ["Wallonie", "Flandre", "France"];
+      const map = {};
+
+      for (const p of permits) {
+        const n = p.name.toLowerCase();
+        let region;
+        if (n.includes("wallonie") || n.includes("wallon")) {
+          region = "Wallonie";
+        } else if (n.includes("flandre") || n.includes("flamand") || n.includes("vlaams") || n.includes("sportvis")) {
+          region = "Flandre";
+        } else if (p.country === "FR") {
+          region = "France";
+        } else {
+          region = p.country === "BE" ? "Belgique" : p.country;
+        }
+        (map[region] = map[region] || []).push(p);
+      }
+
+      // Return in canonical order, then any remaining groups
+      const result = [];
+      for (const key of ORDER) {
+        if (map[key]) result.push([key, map[key]]);
+      }
+      for (const [key, val] of Object.entries(map)) {
+        if (!ORDER.includes(key)) result.push([key, val]);
+      }
+      return result;
+    }
+
+    function renderCard(p) {
+      const priceHTML = p.price_eur != null
+        ? `<div class="permit-price-badge">${p.price_eur.toFixed(2).replace(".", ",")} €</div>`
+        : "";
+      const descHTML = p.description
+        ? `<p class="permit-card-desc">${esc(p.description)}</p>`
+        : "";
+      const btnHTML = p.url
+        ? `<a href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer" class="btn-buy">Acheter ce permis →</a>`
+        : `<span class="btn-buy btn-buy--disabled">Achat non disponible</span>`;
+
+      return `
+        <div class="permit-card">
+          <div class="permit-card-header">
+            <h3 class="permit-card-name">${esc(p.name)}</h3>
+            ${priceHTML}
+          </div>
+          ${descHTML}
+          <div class="permit-card-footer">${btnHTML}</div>
+        </div>`;
+    }
+
+    function renderPermits(permits) {
+      const loadingEl = document.getElementById("permits-loading");
+      const contentEl = document.getElementById("permits-content");
+      loadingEl.classList.add("hidden");
+
+      if (!permits.length) {
+        contentEl.innerHTML = '<p class="status-msg">Aucun permis disponible pour le moment.</p>';
+        contentEl.classList.remove("hidden");
+        return;
+      }
+
+      const groups = groupPermits(permits);
+      contentEl.innerHTML = groups.map(([region, list]) => `
+        <section class="permit-section">
+          <div class="permit-section-header">
+            <h2>${esc(region)}</h2>
+            <div class="permit-section-line"></div>
+          </div>
+          <div class="permit-grid">
+            ${list.map(renderCard).join("")}
+          </div>
+        </section>
+      `).join("");
+
+      contentEl.classList.remove("hidden");
+    }
+
+    (async () => {
+      try {
+        const permits = await getPermits();
+        renderPermits(permits);
+      } catch {
+        document.getElementById("permits-loading").classList.add("hidden");
+        document.getElementById("permits-error").classList.remove("hidden");
+      }
+    })();
+  </script>
+
+</body>
+</html>
