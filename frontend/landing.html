@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Trouve où pêcher, sans mauvaise surprise</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #050e14;
+      --surface:     #0a1929;
+      --surface-2:   #0f2436;
+      --border:      #1a3a50;
+      --blue:        #2e8fa8;
+      --blue-light:  #4db8d4;
+      --blue-glow:   rgba(46, 143, 168, 0.18);
+      --text:        #e0eff5;
+      --text-muted:  #6b9aaa;
+      --heading:     #c8e8f0;
+      --radius:      12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 { font-family: 'Lora', serif; color: var(--heading); line-height: 1.25; }
+
+    a { color: inherit; text-decoration: none; }
+
+    img { max-width: 100%; display: block; }
+
+    /* ── Layout ───────────────────────────────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      padding: 0.65rem 1.35rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--blue-light);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue-light); background: var(--blue-glow); }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px rgba(46, 143, 168, 0.35);
+    }
+    .btn-primary:hover { background: var(--blue-light); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(46, 143, 168, 0.45); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--blue-light);
+      border: 1.5px solid var(--blue);
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 10px;
+    }
+    .btn-outline:hover { background: var(--blue-glow); transform: translateY(-2px); }
+
+    /* ── Header ───────────────────────────────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5, 14, 20, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--blue-light);
+      letter-spacing: -0.01em;
+    }
+
+    .logo span { color: var(--text-muted); font-weight: 400; }
+
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 7rem 0 6rem;
+      text-align: center;
+    }
+
+    /* Radial glow behind the title */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 500px;
+      background: radial-gradient(ellipse at center, rgba(46, 143, 168, 0.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      background: rgba(46, 143, 168, 0.12);
+      border: 1px solid rgba(46, 143, 168, 0.3);
+      border-radius: 999px;
+      padding: 0.3rem 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5.5vw, 3.6rem);
+      font-weight: 600;
+      color: #daeef5;
+      max-width: 780px;
+      margin: 0 auto 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--blue-light);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-note {
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Section commons ──────────────────────────────────────────────────── */
+    section { padding: 5.5rem 0; }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 0.6rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      max-width: 640px;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-sub {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 640px;
+      margin: 0;
+    }
+
+    .section-head {
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+    .section-head .section-title,
+    .section-head .section-sub { margin-left: auto; margin-right: auto; }
+
+    /* ── Features ─────────────────────────────────────────────────────────── */
+    .features { background: var(--bg); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(46, 143, 168, 0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(46, 143, 168, 0.12);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.1rem;
+      color: var(--blue-light);
+    }
+
+    .feature-icon svg { width: 22px; height: 22px; }
+
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--heading);
+    }
+
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── Divider ──────────────────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 0;
+    }
+
+    /* ── Pricing ──────────────────────────────────────────────────────────── */
+    .pricing { background: var(--bg); }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem 2rem;
+      position: relative;
+    }
+
+    .pricing-card.featured {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue), 0 8px 40px rgba(46, 143, 168, 0.2);
+    }
+
+    .badge-recommended {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.9rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .pricing-plan {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .pricing-price {
+      font-family: 'Lora', serif;
+      font-size: 2.75rem;
+      font-weight: 600;
+      color: var(--heading);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .pricing-price sup {
+      font-size: 1.2rem;
+      vertical-align: top;
+      margin-top: 0.5rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .pricing-period {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    .pricing-sep {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .pricing-features li .check {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--blue-light);
+    }
+
+    .pricing-features li .check-muted {
+      color: var(--border);
+    }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      color: var(--blue-light);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 4.5rem 0 4rem; }
+      .hero h1 { font-size: 1.85rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      section { padding: 3.5rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header>
+    <nav class="container">
+      <div class="logo">OùPêcher<span> ·</span></div>
+      <a href="index.html" class="btn btn-ghost">Voir la carte →</a>
+    </nav>
+  </header>
+
+  <!-- ── Hero ────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">Belgique &amp; France</div>
+      <h1>Trouve où pêcher,<br><em>sans mauvaise surprise.</em></h1>
+      <p class="hero-sub">
+        La carte de pêche interactive pour la Belgique et la France.
+        Spots vérifiés, espèces confirmées, permis en ordre — avant même de partir.
+      </p>
+      <div class="hero-ctas">
+        <a href="index.html" class="btn btn-primary">Explorer la carte →</a>
+        <a href="#features" class="btn btn-outline">Découvrir les fonctions</a>
+      </div>
+      <p class="hero-note">Accès gratuit · Aucune inscription requise</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── Features ────────────────────────────────────────────────────────── -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label">Fonctionnalités</div>
+        <h2 class="section-title">Tout ce qu'il faut pour sortir au bon endroit.</h2>
+        <p class="section-sub">Une seule application, toutes les infos dont tu as besoin avant de poser ta ligne.</p>
+      </div>
+
+      <div class="features-grid">
+
+        <!-- 1 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              <path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+            </svg>
+          </div>
+          <h3>Carte interactive</h3>
+          <p>Visualise l'ensemble des spots en Belgique et en France. Navigue, zoome, filtre par type d'eau.</p>
+        </div>
+
+        <!-- 2 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12c0 1-4.5 7.5-9 7.5S3 13 3 12s4.5-7.5 9-7.5S21 11 21 12Z"/>
+              <path d="M3 12c2-3 4.5-4.5 9-4.5"/>
+              <circle cx="9" cy="11" r="1.2" fill="currentColor" stroke="none"/>
+              <path d="M14 7.5c1.5 1 2.5 2.5 3 4.5"/>
+            </svg>
+          </div>
+          <h3>Espèces par zone</h3>
+          <p>Découvre quelles espèces habitent chaque spot — brochet, truite, carpe, sandre et bien d'autres.</p>
+        </div>
+
+        <!-- 3 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
+            </svg>
+          </div>
+          <h3>Permis &amp; autorisations</h3>
+          <p>Sais à l'avance quel permis est requis pour chaque spot. Pêche en règle, toujours.</p>
+        </div>
+
+        <!-- 4 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/>
+            </svg>
+          </div>
+          <h3>Filtres avancés</h3>
+          <p>Filtre par pays, type d'eau, espèce ciblée, technique de pêche ou type de permis.</p>
+        </div>
+
+        <!-- 5 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+            </svg>
+          </div>
+          <h3>Communauté</h3>
+          <p>Spots signalés et vérifiés par des pêcheurs locaux. Une base de données toujours à jour.</p>
+        </div>
+
+        <!-- 6 -->
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18h3"/>
+            </svg>
+          </div>
+          <h3>Mobile &amp; hors-ligne</h3>
+          <p>Accède à la carte depuis ton téléphone. Les infos essentielles disponibles sans connexion.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ── Pricing ──────────────────────────────────────────────────────────── -->
+  <section class="pricing" id="tarifs">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label">Tarifs</div>
+        <h2 class="section-title">Simple &amp; transparent.</h2>
+        <p class="section-sub">Commence gratuitement, passe Premium quand tu en as besoin.</p>
+      </div>
+
+      <div class="pricing-grid">
+
+        <!-- Gratuit -->
+        <div class="pricing-card">
+          <div class="pricing-plan">Gratuit</div>
+          <div class="pricing-price">0<sup>€</sup></div>
+          <div class="pricing-period">pour toujours</div>
+          <div class="pricing-sep"></div>
+          <ul class="pricing-features">
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Carte interactive complète
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Espèces et spots de base
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Filtres pays et type d'eau
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              3 spots favoris
+            </li>
+            <li>
+              <svg class="check check-muted" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd"/></svg>
+              <span style="color: var(--text-muted)">Filtres espèce &amp; technique</span>
+            </li>
+            <li>
+              <svg class="check check-muted" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd"/></svg>
+              <span style="color: var(--text-muted)">Accès hors-ligne</span>
+            </li>
+          </ul>
+          <a href="index.html" class="btn btn-outline" style="width:100%; justify-content:center;">Commencer gratuitement</a>
+        </div>
+
+        <!-- Premium -->
+        <div class="pricing-card featured">
+          <div class="badge-recommended">Recommandé</div>
+          <div class="pricing-plan">Premium</div>
+          <div class="pricing-price">19<sup>€</sup></div>
+          <div class="pricing-period">99 ct · par an · soit 1,67€/mois</div>
+          <div class="pricing-sep"></div>
+          <ul class="pricing-features">
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Tout le plan Gratuit
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Filtres espèce, technique &amp; permis
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Favoris illimités
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Alertes ouverture de saison
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Carte disponible hors-ligne
+            </li>
+            <li>
+              <svg class="check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/></svg>
+              Support prioritaire
+            </li>
+          </ul>
+          <a href="index.html" class="btn btn-primary" style="width:100%; justify-content:center;">Passer Premium</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ───────────────────────────────────────────────────────────── -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logo">OùPêcher</div>
+      <ul class="footer-links">
+        <li><a href="#features">Fonctionnalités</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+        <li><a href="index.html">Carte</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <p class="footer-copy">© 2025 OùPêcher · Belgique &amp; France</p>
+    </div>
+  </footer>
+
+</body>
+</html>

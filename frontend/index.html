@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Carte interactive de pêche</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>OùPêcher</h1>
+    <span class="tagline">Carte interactive de pêche – Belgique &amp; France</span>
+    <span id="api-status" class="api-badge demo">● Chargement…</span>
+  </header>
+
+  <div id="filters">
+    <label for="filter-country">Pays</label>
+    <select id="filter-country">
+      <option value="">Tous</option>
+      <option value="BE">Belgique</option>
+      <option value="FR">France</option>
+    </select>
+
+    <label for="filter-type">Type</label>
+    <select id="filter-type">
+      <option value="">Tous</option>
+      <option value="river">Rivière</option>
+      <option value="lake">Lac</option>
+      <option value="pond">Étang</option>
+      <option value="canal">Canal</option>
+    </select>
+
+    <label for="filter-fish">Espèce</label>
+    <select id="filter-fish">
+      <option value="">Toutes</option>
+    </select>
+
+    <label for="filter-technique">Technique</label>
+    <select id="filter-technique">
+      <option value="">Toutes</option>
+      <option value="mouche">Mouche</option>
+      <option value="spinning">Spinning</option>
+      <option value="coup">Coup</option>
+      <option value="carnassier">Carnassier</option>
+      <option value="lancer">Lancer</option>
+      <option value="nuit">Nuit</option>
+      <option value="feeder">Feeder</option>
+    </select>
+
+    <label for="filter-permit">Permis</label>
+    <select id="filter-permit">
+      <option value="">Tous</option>
+    </select>
+  </div>
+
+  <div id="app">
+    <div id="map"></div>
+
+    <!-- Bouton flottant -->
+    <button id="propose-btn" title="Activez puis cliquez sur la carte pour proposer un spot">
+      + Proposer un spot
+    </button>
+
+    <aside id="panel" class="hidden">
+      <div id="panel-header">
+        <div>
+          <div id="panel-title">–</div>
+          <div id="panel-subtitle"></div>
+        </div>
+        <button id="panel-close" aria-label="Fermer">✕</button>
+      </div>
+      <div id="panel-body"></div>
+    </aside>
+  </div>
+
+  <!-- Modal : Proposer un spot -->
+  <div id="propose-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="propose-modal-title">
+    <div id="propose-modal">
+      <div id="propose-modal-header">
+        <h2 id="propose-modal-title">Proposer un spot de pêche</h2>
+        <button id="propose-close-btn" type="button" aria-label="Fermer">✕</button>
+      </div>
+      <form id="propose-form" novalidate>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="propose-lat">Latitude</label>
+            <input type="number" id="propose-lat" step="any" readonly required>
+          </div>
+          <div class="form-group">
+            <label for="propose-lng">Longitude</label>
+            <input type="number" id="propose-lng" step="any" readonly required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="propose-name">Nom du spot *</label>
+          <input type="text" id="propose-name" required placeholder="Ex : Ourthe à Hamoir">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="propose-type">Type d'eau *</label>
+            <select id="propose-type" required>
+              <option value="">Choisir…</option>
+              <option value="river">Rivière</option>
+              <option value="lake">Lac</option>
+              <option value="pond">Étang</option>
+              <option value="canal">Canal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="propose-country">Pays *</label>
+            <select id="propose-country" required>
+              <option value="">Choisir…</option>
+              <option value="BE">Belgique</option>
+              <option value="FR">France</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Espèces présentes</label>
+          <div class="checkbox-group fish-checkbox-group" id="propose-fish-group">
+            <span class="fish-loading-msg">Chargement des espèces…</span>
+          </div>
+          <label class="checkbox-item checkbox-item--autre">
+            <input type="checkbox" id="fish-autre-check"> Autre espèce
+          </label>
+          <input type="text" id="fish-autre-text" class="hidden"
+            placeholder="Nom de l'espèce non listée" maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label for="propose-permit">Permis requis</label>
+          <select id="propose-permit">
+            <option value="">Aucun permis spécifique</option>
+            <!-- peuplé depuis /api/permits/ -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Techniques autorisées</label>
+          <div class="checkbox-group" id="propose-techniques-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche à la mouche"> Mouche
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Spinning"> Spinning
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche au coup"> Coup
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Carnassier"> Carnassier
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche au lancer"> Lancer
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche de nuit"> Nuit
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Feeder"> Feeder
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Statut</label>
+          <div class="status-badge-pending">En attente de validation</div>
+        </div>
+
+        <div id="propose-error" class="hidden"></div>
+        <button type="submit" id="propose-submit">Soumettre le spot</button>
+
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/map.js"></script>
+  <script>
+    initMap();
+    loadWaterBodies();
+
+    const countrySelect   = document.getElementById("filter-country");
+    const typeSelect      = document.getElementById("filter-type");
+    const fishSelect      = document.getElementById("filter-fish");
+    const techniqueSelect = document.getElementById("filter-technique");
+    const permitSelect    = document.getElementById("filter-permit");
+
+    // Peuple uniquement le filtre Espèce (le formulaire charge ses espèces à l'ouverture)
+    getFishList()
+      .then(species => {
+        species
+          .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+          .forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f.name;
+            opt.textContent = f.name;
+            fishSelect.appendChild(opt);
+          });
+      })
+      .catch(() => {});
+
+    // Peuple le filtre Permis ET le select du formulaire depuis /api/permits/
+    getPermits()
+      .then(permits => {
+        const proposePermitSel = document.getElementById("propose-permit");
+        permits.forEach(p => {
+          const opt1 = document.createElement("option");
+          opt1.value = p.id;
+          opt1.textContent = p.name;
+          permitSelect.appendChild(opt1);
+
+          const opt2 = document.createElement("option");
+          opt2.value = p.id;
+          opt2.textContent = p.name;
+          proposePermitSel.appendChild(opt2);
+        });
+      })
+      .catch(() => {});
+
+    function applyFilters() {
+      loadWaterBodies({
+        country:   countrySelect.value   || undefined,
+        type:      typeSelect.value      || undefined,
+        fish:      fishSelect.value      || undefined,
+        technique: techniqueSelect.value || undefined,
+        permit_id: permitSelect.value    || undefined,
+      });
+    }
+
+    countrySelect.addEventListener("change", applyFilters);
+    typeSelect.addEventListener("change", applyFilters);
+    fishSelect.addEventListener("change", applyFilters);
+    techniqueSelect.addEventListener("change", applyFilters);
+    permitSelect.addEventListener("change", applyFilters);
+
+    // ── Chargement différé des espèces pour le formulaire ─────────────────────
+    // Toggle "Autre espèce" text input
+    document.getElementById("fish-autre-check").addEventListener("change", (e) => {
+      const txt = document.getElementById("fish-autre-text");
+      txt.classList.toggle("hidden", !e.target.checked);
+      if (!e.target.checked) txt.value = "";
+    });
+
+    let _proposeFishLoaded = false;
+
+    function loadProposeFormFish() {
+      if (_proposeFishLoaded) return;
+      const group = document.getElementById("propose-fish-group");
+
+      getFishList()
+        .then(species => {
+          _proposeFishLoaded = true;
+          group.innerHTML = "";
+          species
+            .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+            .forEach(f => {
+              const label = document.createElement("label");
+              label.className = "checkbox-item";
+              const cb = document.createElement("input");
+              cb.type = "checkbox";
+              cb.name = "fish";
+              cb.value = f.id;
+              label.appendChild(cb);
+              label.appendChild(document.createTextNode(" " + f.name));
+              group.appendChild(label);
+            });
+        })
+        .catch(() => {
+          group.innerHTML = '<span class="fish-loading-msg">Espèces non disponibles (API hors ligne)</span>';
+        });
+    }
+
+    // ── Proposer un spot ──────────────────────────────────────────────────────
+    let proposeMode = false;
+
+    const proposeBtn      = document.getElementById("propose-btn");
+    const proposeOverlay  = document.getElementById("propose-overlay");
+    const proposeForm     = document.getElementById("propose-form");
+    const proposeCloseBtn = document.getElementById("propose-close-btn");
+    const proposeLatInput = document.getElementById("propose-lat");
+    const proposeLngInput = document.getElementById("propose-lng");
+    const proposeError    = document.getElementById("propose-error");
+    const proposeSubmit   = document.getElementById("propose-submit");
+    const mapEl           = document.getElementById("map");
+
+    proposeBtn.addEventListener("click", () => {
+      proposeMode = !proposeMode;
+      proposeBtn.classList.toggle("active", proposeMode);
+      mapEl.classList.toggle("propose-active", proposeMode);
+    });
+
+    // Appelé depuis map.js quand proposeMode est actif et que l'utilisateur clique sur la carte
+    function openProposeForm(lat, lng) {
+      proposeLatInput.value = lat.toFixed(6);
+      proposeLngInput.value = lng.toFixed(6);
+      proposeError.classList.add("hidden");
+      proposeOverlay.classList.remove("hidden");
+      proposeMode = false;
+      proposeBtn.classList.remove("active");
+      mapEl.classList.remove("propose-active");
+      loadProposeFormFish();
+      document.getElementById("propose-name").focus();
+    }
+
+    proposeCloseBtn.addEventListener("click", () => {
+      proposeOverlay.classList.add("hidden");
+    });
+
+    proposeOverlay.addEventListener("click", (e) => {
+      if (e.target === proposeOverlay) proposeOverlay.classList.add("hidden");
+    });
+
+    proposeForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      proposeError.classList.add("hidden");
+
+      const name    = document.getElementById("propose-name").value.trim();
+      const type    = document.getElementById("propose-type").value;
+      const country = document.getElementById("propose-country").value;
+
+      if (!name || !type || !country) {
+        proposeError.textContent = "Veuillez remplir tous les champs obligatoires (*).";
+        proposeError.classList.remove("hidden");
+        return;
+      }
+
+      const fish_ids = Array.from(
+        document.querySelectorAll('#propose-fish-group input[type="checkbox"]:checked')
+      ).map(cb => parseInt(cb.value)).filter(n => !isNaN(n));
+
+      const autreChecked    = document.getElementById("fish-autre-check").checked;
+      const autreText       = document.getElementById("fish-autre-text").value.trim();
+      const free_fish_names = autreChecked && autreText ? [autreText] : [];
+
+      const permitVal  = document.getElementById("propose-permit").value;
+      const permit_ids = permitVal ? [parseInt(permitVal)] : [];
+
+      const techniques = Array.from(
+        document.querySelectorAll('#propose-techniques-group input[name="technique"]:checked')
+      ).map(cb => cb.value);
+
+      proposeSubmit.textContent = "Envoi…";
+      proposeSubmit.disabled = true;
+
+      try {
+        await createWaterBody({
+          name, type, country,
+          latitude:  parseFloat(proposeLatInput.value),
+          longitude: parseFloat(proposeLngInput.value),
+          fish_ids, free_fish_names, permit_ids, techniques,
+        });
+        // Le spot est "pending" : il n'apparaît pas sur la carte avant validation
+        proposeOverlay.classList.add("hidden");
+        proposeForm.reset();
+        document.getElementById("fish-autre-text").classList.add("hidden");
+        showToast("Spot soumis avec succès ! Il apparaîtra sur la carte après validation.");
+      } catch {
+        proposeError.textContent = "Erreur lors de l'envoi — vérifiez que l'API est accessible.";
+        proposeError.classList.remove("hidden");
+      } finally {
+        proposeSubmit.textContent = "Soumettre le spot";
+        proposeSubmit.disabled = false;
+      }
+    });
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "propose-toast";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+  </script>
+
+</body>
+</html>
