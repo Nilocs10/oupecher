@@ -1,4 +1,10 @@
-const API_BASE = "http://127.0.0.1:8000/api";
+// En local (file:// ou localhost) → backend uvicorn ; en production → même origine
+const API_BASE = (() => {
+  const { hostname, protocol } = window.location;
+  return protocol === "file:" || hostname === "localhost" || hostname === "127.0.0.1"
+    ? "http://127.0.0.1:8000/api"
+    : "/api";
+})();
 
 const DEMO_WATER_BODIES = [
   {

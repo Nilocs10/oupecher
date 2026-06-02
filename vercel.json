@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)",   "dest": "/api/index.py"        },
+    { "src": "/css/(.*)",   "dest": "/frontend/css/$1"     },
+    { "src": "/js/(.*)",    "dest": "/frontend/js/$1"      },
+    { "src": "/data/(.*)",  "dest": "/frontend/data/$1"    },
+    { "src": "/carte",      "dest": "/frontend/index.html" },
+    { "src": "/",           "dest": "/frontend/landing.html" },
+    { "src": "/(.*\\.html)","dest": "/frontend/$1"         },
+    { "src": "/(.*)",       "dest": "/frontend/$1"         }
+  ]
+}
