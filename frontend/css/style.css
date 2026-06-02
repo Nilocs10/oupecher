@@ -53,8 +53,50 @@ header .tagline {
   color: var(--color-text-muted);
 }
 
-.api-badge {
+/* ── Auth nav dans le header (index.html) ── */
+.header-auth {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.auth-name {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.auth-btn-login {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius);
+  background: rgba(34, 211, 184, 0.08);
+  color: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.auth-btn-login:hover { background: rgba(34, 211, 184, 0.18); }
+
+.auth-btn-logout {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.auth-btn-logout:hover { color: var(--color-text); border-color: var(--color-text-muted); }
+
+.api-badge {
+  margin-left: 0;
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.25rem 0.6rem;

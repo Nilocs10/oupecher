@@ -8,6 +8,8 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase JS (auth) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -16,6 +18,7 @@
   <header>
     <h1>OùPêcher</h1>
     <span class="tagline">Carte interactive de pêche – Belgique &amp; France</span>
+    <div id="auth-nav" class="header-auth"></div>
     <span id="api-status" class="api-badge demo">● Chargement…</span>
   </header>
 
@@ -187,6 +190,7 @@
   <script src="js/api.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/map.js"></script>
+  <script src="js/auth.js"></script>
   <script>
     initMap();
     loadWaterBodies();

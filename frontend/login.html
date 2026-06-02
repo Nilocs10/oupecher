@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Connexion</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #050e14;
+      --surface:    #0a1929;
+      --border:     #1a3a50;
+      --blue:       #2e8fa8;
+      --blue-light: #4db8d4;
+      --blue-glow:  rgba(46, 143, 168, 0.18);
+      --text:       #e0eff5;
+      --muted:      #6b9aaa;
+      --error:      #f87171;
+      --success:    #4db8d4;
+      --radius:     12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Logo ── */
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      color: var(--blue-light);
+      margin-bottom: 2rem;
+      text-decoration: none;
+    }
+
+    /* ── Card ── */
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ── Tabs ── */
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .auth-tab {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .auth-tab.active {
+      color: var(--blue-light);
+      border-bottom-color: var(--blue);
+      background: rgba(46, 143, 168, 0.06);
+    }
+    .auth-tab:hover:not(.active) { color: var(--text); }
+
+    /* ── Form ── */
+    .auth-form {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .auth-form.hidden { display: none; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .field input {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.65rem 0.9rem;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    .field input::placeholder { color: var(--muted); opacity: 0.6; }
+    .field input:focus { border-color: var(--blue); }
+
+    /* ── Messages ── */
+    .auth-msg {
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .auth-msg.hidden { display: none; }
+    .auth-msg.error   { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.35); color: var(--error); }
+    .auth-msg.success { background: rgba(77, 184, 212, 0.1);  border: 1px solid rgba(77, 184, 212, 0.35);  color: var(--success); }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 0.25rem;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--blue-light); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Footer ── */
+    .auth-footer {
+      text-align: center;
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .auth-footer a {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .auth-footer a:hover { color: var(--blue-light); }
+  </style>
+</head>
+<body>
+
+  <a href="landing.html" class="logo">OùPêcher</a>
+
+  <div class="auth-card">
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Connexion</button>
+      <button class="auth-tab" data-tab="register">Inscription</button>
+    </div>
+
+    <!-- Formulaire Connexion -->
+    <form id="form-login" class="auth-form" novalidate>
+      <div class="field">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" autocomplete="email" placeholder="vous@exemple.com" required>
+      </div>
+      <div class="field">
+        <label for="login-password">Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password" placeholder="••••••••" required>
+      </div>
+      <div id="login-msg" class="auth-msg hidden"></div>
+      <button type="submit" class="btn-submit" id="login-submit">Se connecter</button>
+    </form>
+
+    <!-- Formulaire Inscription -->
+    <form id="form-register" class="auth-form hidden" novalidate>
+      <div class="field">
+        <label for="reg-username">Pseudo</label>
+        <input type="text" id="reg-username" placeholder="PêcheurDuNord" minlength="3" maxlength="30" required>
+      </div>
+      <div class="field">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" autocomplete="email" placeholder="vous@exemple.com" required>
+      </div>
+      <div class="field">
+        <label for="reg-password">Mot de passe <span style="font-weight:400;text-transform:none;letter-spacing:0">(6 caractères min.)</span></label>
+        <input type="password" id="reg-password" autocomplete="new-password" placeholder="••••••••" minlength="6" required>
+      </div>
+      <div id="reg-msg" class="auth-msg hidden"></div>
+      <button type="submit" class="btn-submit" id="reg-submit">Créer mon compte</button>
+    </form>
+
+    <div class="auth-footer">
+      <a href="index.html">← Retour à la carte</a>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const _SB_URL  = "https://xggdrlytxplbfykdbhvz.supabase.co";
+    const _SB_ANON = "sb_publishable_J_Kn3EKBR5i1ZiPr1Acxzg_ri27kj1F";
+    const sb = window.supabase.createClient(_SB_URL, _SB_ANON);
+
+    // Redirige si déjà connecté
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = "index.html";
+    });
+
+    // ── Tabs ─────────────────────────────────────────────────────────────────
+    document.querySelectorAll(".auth-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".auth-tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.getElementById("form-login").classList.toggle("hidden", tab !== "login");
+        document.getElementById("form-register").classList.toggle("hidden", tab !== "register");
+      });
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `auth-msg ${type}`;
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      btn.textContent = loading ? "Chargement…" : btn.dataset.label;
+    }
+
+    document.getElementById("login-submit").dataset.label  = "Se connecter";
+    document.getElementById("reg-submit").dataset.label    = "Créer mon compte";
+
+    // ── Connexion ────────────────────────────────────────────────────────────
+    document.getElementById("form-login").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("login-submit");
+      setLoading(btn, true);
+      showMsg("login-msg", "", "hidden");
+
+      const email    = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        showMsg("login-msg", traduireErreur(error.message), "error");
+        setLoading(btn, false);
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    // ── Inscription ──────────────────────────────────────────────────────────
+    document.getElementById("form-register").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("reg-submit");
+      setLoading(btn, true);
+      showMsg("reg-msg", "", "hidden");
+
+      const username = document.getElementById("reg-username").value.trim();
+      const email    = document.getElementById("reg-email").value.trim();
+      const password = document.getElementById("reg-password").value;
+
+      if (username.length < 3) {
+        showMsg("reg-msg", "Le pseudo doit contenir au moins 3 caractères.", "error");
+        setLoading(btn, false);
+        return;
+      }
+
+      const { data, error } = await sb.auth.signUp({
+        email,
+        password,
+        options: { data: { username } },
+      });
+
+      if (error) {
+        showMsg("reg-msg", traduireErreur(error.message), "error");
+        setLoading(btn, false);
+      } else if (data.session) {
+        // Confirmation email désactivée → connexion immédiate
+        window.location.href = "index.html";
+      } else {
+        // Confirmation email requise
+        showMsg("reg-msg",
+          "Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi.",
+          "success");
+        setLoading(btn, false);
+      }
+    });
+
+    // ── Traduction des erreurs Supabase ───────────────────────────────────────
+    function traduireErreur(msg) {
+      if (!msg) return "Une erreur est survenue.";
+      if (msg.includes("Invalid login"))          return "Email ou mot de passe incorrect.";
+      if (msg.includes("Email not confirmed"))    return "Confirme ton email avant de te connecter.";
+      if (msg.includes("already registered"))     return "Cet email est déjà utilisé.";
+      if (msg.includes("Password should be"))     return "Le mot de passe doit contenir au moins 6 caractères.";
+      if (msg.includes("Unable to validate"))     return "Adresse email invalide.";
+      if (msg.includes("duplicate key") && msg.includes("username"))
+                                                  return "Ce pseudo est déjà pris. Choisis-en un autre.";
+      return msg;
+    }
+  </script>
+
+</body>
+</html>

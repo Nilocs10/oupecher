@@ -425,6 +425,48 @@
       color: var(--text-muted);
     }
 
+    /* ── Auth nav ─────────────────────────────────────────────────────────── */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .auth-name {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .auth-btn-login {
+      background: var(--blue-glow);
+      color: var(--blue-light);
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .auth-btn-login:hover { background: rgba(46, 143, 168, 0.28); }
+
+    .auth-btn-logout {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .auth-btn-logout:hover { color: var(--text); border-color: var(--text-muted); }
+
     /* ── Responsive ───────────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .features-grid { grid-template-columns: repeat(2, 1fr); }
@@ -446,7 +488,10 @@
   <header>
     <nav class="container">
       <div class="logo">OùPêcher<span> ·</span></div>
-      <a href="index.html" class="btn btn-ghost">Voir la carte →</a>
+      <div class="nav-right">
+        <a href="index.html" class="btn btn-ghost">Voir la carte →</a>
+        <div id="auth-nav"></div>
+      </div>
     </nav>
   </header>
 
@@ -656,5 +701,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
