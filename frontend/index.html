@@ -76,7 +76,10 @@
           <div id="panel-title">–</div>
           <div id="panel-subtitle"></div>
         </div>
-        <button id="panel-close" aria-label="Fermer">✕</button>
+        <div class="panel-header-actions">
+          <button id="fav-btn" class="fav-btn" aria-label="Ajouter aux favoris" title="Favoris">♡</button>
+          <button id="panel-close" aria-label="Fermer">✕</button>
+        </div>
       </div>
       <div id="panel-body"></div>
     </aside>
@@ -191,9 +194,22 @@
   <script src="js/ui.js"></script>
   <script src="js/map.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/favorites.js"></script>
   <script>
     initMap();
-    loadWaterBodies();
+    loadWaterBodies().then(() => {
+      // Centrage sur un spot depuis favoris.html (?spot=ID&lat=X&lng=Y&name=N)
+      const p = new URLSearchParams(window.location.search);
+      const lat = parseFloat(p.get("lat"));
+      const lng = parseFloat(p.get("lng"));
+      const spotId = parseInt(p.get("spot"));
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.setView([lat, lng], 14);
+        if (spotId) {
+          openWaterBodyPanel(spotId, decodeURIComponent(p.get("name") || "Spot"));
+        }
+      }
+    });
 
     const countrySelect   = document.getElementById("filter-country");
     const typeSelect      = document.getElementById("filter-type");

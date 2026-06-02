@@ -11,7 +11,12 @@ function renderAuthNav(navEl, session) {
   if (session) {
     const name = session.user.user_metadata?.username
                || session.user.email.split("@")[0];
+    // HIDE_FAV_LINK peut être défini sur favoris.html pour éviter l'auto-lien
+    const favLink = (typeof HIDE_FAV_LINK === "undefined")
+      ? `<a href="favoris.html" class="header-link">&#x2665; Mes favoris</a>`
+      : "";
     navEl.innerHTML = `
+      ${favLink}
       <span class="auth-name">${_esc(name)}</span>
       <button class="auth-btn-logout" id="btn-logout">Déconnexion</button>
     `;

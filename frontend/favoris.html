@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Mes favoris</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #050e14;
+      --surface:    #0a1929;
+      --surface-2:  #0f2436;
+      --border:     #1a3a50;
+      --blue:       #2e8fa8;
+      --blue-light: #4db8d4;
+      --blue-glow:  rgba(46, 143, 168, 0.18);
+      --text:       #e0eff5;
+      --muted:      #6b9aaa;
+      --radius:     12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5, 14, 20, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-family: 'Lora', serif;
+      font-size: 1.25rem;
+      color: var(--blue-light);
+    }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--blue-light);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--blue); background: var(--blue-glow); }
+
+    /* Auth nav styles (injected by auth.js) */
+    .auth-name { font-size: 0.82rem; color: var(--muted); }
+    .auth-btn-login {
+      background: var(--blue-glow); color: var(--blue-light);
+      border: 1px solid var(--blue); border-radius: 8px;
+      padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600;
+      transition: background 0.15s;
+    }
+    .auth-btn-login:hover { background: rgba(46,143,168,0.28); }
+    .auth-btn-logout {
+      background: none; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: color 0.15s;
+    }
+    .auth-btn-logout:hover { color: var(--text); }
+    .header-link { font-size: 0.82rem; font-weight: 600; color: var(--muted); transition: color 0.15s; }
+    .header-link:hover { color: var(--blue-light); }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+      width: 100%;
+    }
+
+    .page-title {
+      font-family: 'Lora', serif;
+      font-size: 1.9rem;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    .page-sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── State messages ── */
+    .state-msg {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .state-msg a { color: var(--blue-light); text-decoration: underline; }
+
+    /* ── Favorite card ── */
+    .fav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1rem;
+    }
+
+    .fav-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      transition: border-color 0.2s;
+    }
+    .fav-card:hover { border-color: rgba(46, 143, 168, 0.45); }
+
+    .fav-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .fav-name {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .fav-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.15rem;
+      cursor: pointer;
+      padding: 0.1rem 0.25rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .fav-remove:hover { color: #f87171; background: rgba(248,113,113,0.08); }
+
+    .fav-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .fav-badge {
+      display: inline-block;
+      background: rgba(46, 143, 168, 0.1);
+      border: 1px solid rgba(46, 143, 168, 0.3);
+      color: var(--blue-light);
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .fav-coords {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fav-fish {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      min-height: 1.4rem;
+    }
+
+    .fav-fish-tag {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .fav-actions {
+      margin-top: 0.25rem;
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .btn-map {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .btn-map:hover { background: var(--blue-light); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .fav-grid { grid-template-columns: 1fr; }
+      main { padding: 2rem 1rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="landing.html" class="logo">OùPêcher</a>
+      <div class="nav-right">
+        <a href="index.html" class="btn-ghost">← Carte</a>
+        <div id="auth-nav"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h1 class="page-title">Mes favoris</h1>
+    <p class="page-sub" id="fav-count"></p>
+    <div id="fav-list"><p class="state-msg">Chargement…</p></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- HIDE_FAV_LINK évite l'auto-lien "Mes favoris" sur cette même page -->
+  <script>const HIDE_FAV_LINK = true;</script>
+  <script src="js/auth.js"></script>
+  <script>
+    const _API = (() => {
+      const { hostname, protocol } = window.location;
+      return protocol === "file:" || hostname === "localhost" || hostname === "127.0.0.1"
+        ? "http://127.0.0.1:8000/api"
+        : "/api";
+    })();
+
+    const TYPE_LABELS = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal" };
+    const COUNTRY_LABELS = { BE: "Belgique", FR: "France" };
+
+    function esc(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    async function fetchFavorites() {
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (!session) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const { data: favs, error } = await sbClient
+        .from("favorites")
+        .select("water_body_id, created_at, water_bodies(id, name, type, country, region, latitude, longitude)")
+        .order("created_at", { ascending: false });
+
+      const list = document.getElementById("fav-list");
+      const countEl = document.getElementById("fav-count");
+
+      if (error || !favs) {
+        list.innerHTML = `<p class="state-msg">Erreur lors du chargement des favoris.</p>`;
+        return;
+      }
+
+      // Filtrer les lignes avec water_bodies valide (spot peut avoir été supprimé)
+      const valid = favs.filter(f => f.water_bodies);
+
+      countEl.textContent = valid.length
+        ? `${valid.length} spot${valid.length > 1 ? "s" : ""} enregistré${valid.length > 1 ? "s" : ""}`
+        : "";
+
+      if (!valid.length) {
+        list.innerHTML = `
+          <p class="state-msg">
+            Tu n'as pas encore de favoris.<br>
+            <a href="index.html">Explorer la carte →</a>
+          </p>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      const grid = document.createElement("div");
+      grid.className = "fav-grid";
+
+      valid.forEach(fav => {
+        const wb = fav.water_bodies;
+        const mapUrl = `index.html?spot=${wb.id}&lat=${wb.latitude}&lng=${wb.longitude}&name=${encodeURIComponent(wb.name)}`;
+        const typeLabel    = TYPE_LABELS[wb.type]    || wb.type;
+        const countryLabel = COUNTRY_LABELS[wb.country] || wb.country;
+        const regionText   = wb.region ? ` – ${esc(wb.region)}` : "";
+
+        const card = document.createElement("div");
+        card.className = "fav-card";
+        card.dataset.wbId = wb.id;
+        card.innerHTML = `
+          <div class="fav-card-header">
+            <div class="fav-name">${esc(wb.name)}</div>
+            <button class="fav-remove" title="Retirer des favoris" data-id="${wb.id}">♥</button>
+          </div>
+          <div class="fav-meta">
+            <span class="fav-badge">${esc(typeLabel)}</span>
+            <span class="fav-badge">${esc(countryLabel)}${regionText}</span>
+            <span class="fav-coords">${wb.latitude.toFixed(4)}° N, ${wb.longitude.toFixed(4)}° E</span>
+          </div>
+          <div class="fav-fish" id="fish-${wb.id}">
+            <span class="fav-fish-tag" style="opacity:.5">Chargement espèces…</span>
+          </div>
+          <div class="fav-actions">
+            <a href="${mapUrl}" class="btn-map">Voir sur la carte →</a>
+          </div>
+        `;
+
+        card.querySelector(".fav-remove").addEventListener("click", async (e) => {
+          const btn = e.currentTarget;
+          btn.disabled = true;
+          const { data: { session } } = await sbClient.auth.getSession();
+          if (session) {
+            await sbClient.from("favorites")
+              .delete()
+              .eq("water_body_id", wb.id);
+            card.style.transition = "opacity 0.3s";
+            card.style.opacity = "0";
+            setTimeout(() => {
+              card.remove();
+              const remaining = grid.querySelectorAll(".fav-card").length;
+              countEl.textContent = remaining
+                ? `${remaining} spot${remaining > 1 ? "s" : ""} enregistré${remaining > 1 ? "s" : ""}`
+                : "";
+              if (!remaining) {
+                list.innerHTML = `<p class="state-msg">Tu n'as plus de favoris. <a href="index.html">Explorer la carte →</a></p>`;
+              }
+            }, 300);
+          }
+        });
+
+        grid.appendChild(card);
+
+        // Charger les espèces en parallèle
+        fetch(`${_API}/water-bodies/${wb.id}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(detail => {
+            const fishEl = document.getElementById(`fish-${wb.id}`);
+            if (!fishEl) return;
+            const species = detail?.fish_species || [];
+            fishEl.innerHTML = species.length
+              ? species.slice(0, 5).map(f => `<span class="fav-fish-tag">${esc(f)}</span>`).join("") +
+                (species.length > 5 ? `<span class="fav-fish-tag">+${species.length - 5}</span>` : "")
+              : '<span class="fav-fish-tag" style="opacity:.4">Aucune espèce renseignée</span>';
+          })
+          .catch(() => {
+            const fishEl = document.getElementById(`fish-${wb.id}`);
+            if (fishEl) fishEl.innerHTML = "";
+          });
+      });
+
+      list.appendChild(grid);
+    }
+
+    // Attendre que sbClient (auth.js) soit prêt
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof sbClient !== "undefined") {
+        fetchFavorites();
+      } else {
+        // auth.js non encore exécuté — réessayer après chargement
+        window.addEventListener("load", fetchFavorites);
+      }
+    });
+  </script>
+
+</body>
+</html>

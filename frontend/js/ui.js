@@ -15,6 +15,7 @@ async function openWaterBodyPanel(id, name) {
   panelTitle.textContent = name;
   panelSubtitle.textContent = "Chargement…";
   panelBody.innerHTML = '<p class="panel-loading-text">Chargement des informations…</p>';
+  updateFavBtn(id); // mise à jour non-bloquante du bouton favori
 
   try {
     const data = await getWaterBodyDetail(id);
@@ -23,6 +24,38 @@ async function openWaterBodyPanel(id, name) {
     panelBody.innerHTML = `<p style="color:red">Erreur lors du chargement.</p>`;
     console.error(err);
   }
+}
+
+async function updateFavBtn(waterBodyId) {
+  const btn = document.getElementById("fav-btn");
+  if (!btn) return;
+
+  if (typeof sbClient === "undefined") { btn.style.visibility = "hidden"; return; }
+  btn.style.visibility = "";
+
+  const { data: { session } } = await sbClient.auth.getSession();
+
+  if (!session) {
+    btn.textContent = "♡";
+    btn.title = "Connectez-vous pour ajouter aux favoris";
+    btn.classList.remove("fav-btn--active");
+    btn.onclick = () => { window.location.href = "login.html"; };
+    return;
+  }
+
+  const faved = typeof isFavorited !== "undefined" && isFavorited(waterBodyId);
+  btn.textContent  = faved ? "♥" : "♡";
+  btn.title        = faved ? "Retirer des favoris" : "Ajouter aux favoris";
+  btn.classList.toggle("fav-btn--active", faved);
+
+  btn.onclick = async () => {
+    btn.disabled = true;
+    if (typeof toggleFavorite !== "undefined") {
+      await toggleFavorite(waterBodyId);
+      await updateFavBtn(waterBodyId);
+    }
+    btn.disabled = false;
+  };
 }
 
 function renderPanel(wb) {
