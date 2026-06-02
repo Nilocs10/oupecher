@@ -30,8 +30,14 @@ async function updateFavBtn(waterBodyId) {
   const btn = document.getElementById("fav-btn");
   if (!btn) return;
 
-  if (typeof sbClient === "undefined") { btn.style.visibility = "hidden"; return; }
-  btn.style.visibility = "";
+  // Si auth.js n'est pas chargé : bouton visible pointant vers login (jamais caché)
+  if (typeof sbClient === "undefined") {
+    btn.textContent = "♡";
+    btn.title = "Connexion requise";
+    btn.classList.remove("fav-btn--active");
+    btn.onclick = () => { window.location.href = "login.html"; };
+    return;
+  }
 
   const { data: { session } } = await sbClient.auth.getSession();
 
@@ -43,9 +49,15 @@ async function updateFavBtn(waterBodyId) {
     return;
   }
 
+  // Attendre la fin du chargement initial des favoris (résout la race condition
+  // quand le panneau s'ouvre via ?spot= au chargement de la page).
+  if (typeof favoritesReady !== "undefined") {
+    await favoritesReady();
+  }
+
   const faved = typeof isFavorited !== "undefined" && isFavorited(waterBodyId);
-  btn.textContent  = faved ? "♥" : "♡";
-  btn.title        = faved ? "Retirer des favoris" : "Ajouter aux favoris";
+  btn.textContent = faved ? "♥" : "♡";
+  btn.title       = faved ? "Retirer des favoris" : "Ajouter aux favoris";
   btn.classList.toggle("fav-btn--active", faved);
 
   btn.onclick = async () => {

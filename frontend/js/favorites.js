@@ -2,6 +2,7 @@
 // Dépend de sbClient défini dans auth.js (chargé avant ce fichier).
 
 const _favIds = new Set();
+let   _favReady = null; // Promise résolue dès que le chargement initial est terminé
 
 async function _session() {
   if (typeof sbClient === "undefined") return null;
@@ -17,6 +18,12 @@ async function loadFavorites() {
     .from("favorites")
     .select("water_body_id");
   (data || []).forEach(r => _favIds.add(Number(r.water_body_id)));
+}
+
+// Renvoie une Promise qui résout quand le chargement initial est terminé.
+// Permet à updateFavBtn() d'attendre la fin du fetch avant de lire _favIds.
+function favoritesReady() {
+  return _favReady || Promise.resolve();
 }
 
 function isFavorited(waterBodyId) {
@@ -48,6 +55,9 @@ async function toggleFavorite(waterBodyId) {
 
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof sbClient === "undefined") return;
-  sbClient.auth.onAuthStateChange(() => loadFavorites());
-  loadFavorites();
+  // Stocker la promise pour que favoritesReady() puisse l'awaiter
+  _favReady = loadFavorites();
+  sbClient.auth.onAuthStateChange(() => {
+    _favReady = loadFavorites();
+  });
 });

@@ -116,17 +116,23 @@ header .tagline {
 .fav-btn {
   background: none;
   border: none;
-  font-size: 1.25rem;
-  color: var(--color-text-muted);
+  font-size: 1.45rem;
+  color: rgba(214, 228, 240, 0.65); /* blanc-bleuté, lisible sur fond sombre */
   cursor: pointer;
-  padding: 0.15rem 0.3rem;
+  padding: 0.15rem 0.35rem;
   border-radius: var(--radius);
   line-height: 1;
   transition: color 0.15s, background 0.15s;
 }
-.fav-btn:hover:not(:disabled) { color: #f87171; background: rgba(248, 113, 113, 0.1); }
-.fav-btn--active { color: #f87171 !important; }
-.fav-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.fav-btn:hover:not(:disabled) {
+  color: #fb7185;
+  background: rgba(251, 113, 133, 0.12);
+}
+.fav-btn--active {
+  color: #fb7185 !important; /* rose-400 — vif et contrasté */
+  text-shadow: 0 0 8px rgba(251, 113, 133, 0.45);
+}
+.fav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .api-badge {
   margin-left: 0;
