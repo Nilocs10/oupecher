@@ -158,10 +158,12 @@
       // Permis
       const permitsEl = document.getElementById("spot-permits");
       const permits = wb.permits || [];
-      if (!wb.permit_required || !permits.length) {
+      const hasSociety = wb.private_society_name != null;
+
+      if (!permits.length && !hasSociety) {
         permitsEl.innerHTML = `<span class="no-permit">✓ Aucun permis spécifique</span>`;
       } else {
-        permitsEl.innerHTML = permits.map(p => {
+        let permitsHTML = permits.map(p => {
           const priceHTML = p.price_eur != null
             ? `<span class="permit-price">${p.price_eur.toFixed(2).replace(".", ",")} €</span>`
             : "";
@@ -174,6 +176,18 @@
             <div class="permit-footer">${priceHTML}${linkHTML}</div>
           </div>`;
         }).join("");
+
+        if (hasSociety) {
+          const label = wb.private_society_name
+            ? `Permis régional + ${esc(wb.private_society_name)}`
+            : "Permis régional + société locale requise";
+          permitsHTML += `
+            <div class="permit-item">
+              <span class="permit-badge">⚠ ${label}</span>
+            </div>`;
+        }
+
+        permitsEl.innerHTML = permitsHTML;
       }
 
       // Techniques

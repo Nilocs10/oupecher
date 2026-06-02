@@ -165,12 +165,13 @@ function buildInfoHTML(wb) {
 
 function buildPermitHTML(wb) {
   const permits = wb.permits || [];
+  const hasSociety = wb.private_society_name != null;
 
-  if (!wb.permit_required || !permits.length) {
+  if (!permits.length && !hasSociety) {
     return `<span class="no-permit">✓ Aucun permis spécifique</span>`;
   }
 
-  return permits.map(p => {
+  let html = permits.map(p => {
     const priceHTML = p.price_eur != null
       ? `<span class="permit-price">${p.price_eur.toFixed(2).replace(".", ",")} €</span>`
       : "";
@@ -184,6 +185,18 @@ function buildPermitHTML(wb) {
         <div class="permit-footer">${priceHTML}${linkHTML}</div>
       </div>`;
   }).join("");
+
+  if (hasSociety) {
+    const label = wb.private_society_name
+      ? `Permis régional + ${esc(wb.private_society_name)}`
+      : "Permis régional + société locale requise";
+    html += `
+      <div class="permit-item">
+        <span class="permit-badge">⚠ ${label}</span>
+      </div>`;
+  }
+
+  return html;
 }
 
 function safeUrl(url) {

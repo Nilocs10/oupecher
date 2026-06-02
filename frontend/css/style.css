@@ -786,6 +786,13 @@ header .tagline {
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
 }
+.form-group .checkbox-item {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
 .form-group input,
 .form-group select,
 .form-group textarea {

@@ -21,6 +21,7 @@ class WaterBodyBase(BaseModel):
     latitude: float
     longitude: float
     geojson: dict | None = None
+    private_society_name: str | None = None
 
 
 class WaterBodyCreate(WaterBodyBase):

@@ -152,6 +152,14 @@
         </div>
 
         <div class="form-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="private-society-check"> Société de pêche privée requise
+          </label>
+          <input type="text" id="private-society-name" class="hidden"
+            placeholder="Nom de la société (ex : Club de pêche local)" maxlength="150">
+        </div>
+
+        <div class="form-group">
           <label>Techniques autorisées</label>
           <div class="checkbox-group" id="propose-techniques-group">
             <label class="checkbox-item">
@@ -275,6 +283,12 @@
       if (!e.target.checked) txt.value = "";
     });
 
+    document.getElementById("private-society-check").addEventListener("change", (e) => {
+      const txt = document.getElementById("private-society-name");
+      txt.classList.toggle("hidden", !e.target.checked);
+      if (!e.target.checked) txt.value = "";
+    });
+
     let _proposeFishLoaded = false;
 
     function loadProposeFormFish() {
@@ -373,6 +387,11 @@
         document.querySelectorAll('#propose-techniques-group input[name="technique"]:checked')
       ).map(cb => cb.value);
 
+      const societyChecked = document.getElementById("private-society-check").checked;
+      const private_society_name = societyChecked
+        ? document.getElementById("private-society-name").value.trim()
+        : null;
+
       proposeSubmit.textContent = "Envoi…";
       proposeSubmit.disabled = true;
 
@@ -382,11 +401,13 @@
           latitude:  parseFloat(proposeLatInput.value),
           longitude: parseFloat(proposeLngInput.value),
           fish_ids, free_fish_names, permit_ids, techniques,
+          private_society_name,
         });
         // Le spot est "pending" : il n'apparaît pas sur la carte avant validation
         proposeOverlay.classList.add("hidden");
         proposeForm.reset();
         document.getElementById("fish-autre-text").classList.add("hidden");
+        document.getElementById("private-society-name").classList.add("hidden");
         showToast("Spot soumis avec succès ! Il apparaîtra sur la carte après validation.");
       } catch {
         proposeError.textContent = "Erreur lors de l'envoi — vérifiez que l'API est accessible.";
