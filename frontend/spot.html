@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spot – OùPêcher</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="spot-page">
+
+  <header>
+    <a href="index.html" class="header-link">← Carte</a>
+    <h1><a href="index.html" class="header-logo-link">OùPêcher</a></h1>
+    <span class="tagline">Belgique &amp; France</span>
+    <div id="auth-nav" class="header-auth"></div>
+  </header>
+
+  <main id="spot-main">
+    <p id="spot-loading" class="spot-status">Chargement…</p>
+    <p id="spot-error"   class="spot-status hidden">Spot introuvable ou inaccessible.</p>
+
+    <div id="spot-content" class="hidden">
+
+      <div class="spot-hero">
+        <h2 id="spot-name"></h2>
+        <p  id="spot-meta" class="spot-meta"></p>
+        <a  id="back-map-link" href="index.html" class="btn-back-map">← Voir sur la carte</a>
+      </div>
+
+      <div class="spot-layout">
+
+        <!-- Colonne gauche : map + photos -->
+        <section class="spot-col-aside">
+          <div class="spot-section spot-section--map">
+            <div id="spot-map"></div>
+          </div>
+          <div class="spot-section">
+            <h3>Photos</h3>
+            <div id="spot-photos-grid" class="photos-grid">
+              <p class="photos-loading">Chargement…</p>
+            </div>
+            <div id="spot-photos-upload"></div>
+          </div>
+        </section>
+
+        <!-- Colonne droite : infos + commentaires -->
+        <section class="spot-col-info">
+
+          <div class="spot-section">
+            <h3>Note</h3>
+            <div class="rating-avg-row" id="rating-avg"><span class="rating-loading">Chargement…</span></div>
+            <div class="rating-user-row" id="rating-user"></div>
+          </div>
+
+          <div class="spot-section">
+            <h3>Espèces présentes</h3>
+            <div class="tags" id="spot-fish"></div>
+          </div>
+
+          <div class="spot-section">
+            <h3>Permis</h3>
+            <div id="spot-permits"></div>
+          </div>
+
+          <div class="spot-section">
+            <h3>Techniques autorisées</h3>
+            <div class="tags" id="spot-techniques"></div>
+          </div>
+
+          <div class="spot-section">
+            <h3>Itinéraire</h3>
+            <div class="nav-btns" id="spot-nav"></div>
+          </div>
+
+          <div class="spot-section">
+            <h3>Commentaires</h3>
+            <div id="spot-comments-list"></div>
+            <form id="spot-comment-form" class="comment-form">
+              <h3>Laisser un commentaire</h3>
+              <input type="text" id="spot-comment-author" placeholder="Votre prénom ou pseudo" maxlength="100" required>
+              <textarea id="spot-comment-content" rows="3" maxlength="1000" required
+                placeholder="Accès, parking, végétation, place pour manger…"></textarea>
+              <div id="spot-comment-error" class="comment-error hidden"></div>
+              <button type="submit" id="spot-comment-submit">Publier</button>
+            </form>
+          </div>
+
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ratings.js"></script>
+  <script src="js/photos.js"></script>
+  <script>
+    const spotId = parseInt(new URLSearchParams(window.location.search).get("id"));
+    if (!spotId || isNaN(spotId)) window.location.href = "index.html";
+
+    const loadingEl = document.getElementById("spot-loading");
+    const errorEl   = document.getElementById("spot-error");
+    const contentEl = document.getElementById("spot-content");
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleDateString("fr-BE", {
+        day: "numeric", month: "short", year: "numeric"
+      });
+    }
+
+    function safeUrl(url) {
+      try {
+        const u = new URL(url);
+        return (u.protocol === "http:" || u.protocol === "https:") ? url : "#";
+      } catch { return "#"; }
+    }
+
+    (async () => {
+      try {
+        const wb = await getWaterBodyDetail(spotId);
+        renderSpotPage(wb);
+      } catch {
+        loadingEl.classList.add("hidden");
+        errorEl.classList.remove("hidden");
+      }
+    })();
+
+    function renderSpotPage(wb) {
+      document.title = `${wb.name} – OùPêcher`;
+
+      document.getElementById("spot-name").textContent = wb.name;
+      const typeLabel = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal" };
+      const country   = wb.country === "BE" ? "Belgique" : "France";
+      document.getElementById("spot-meta").textContent =
+        `${typeLabel[wb.type] ?? wb.type} · ${country}${wb.region ? " – " + wb.region : ""}`;
+
+      document.getElementById("back-map-link").href =
+        `index.html?spot=${wb.id}&lat=${wb.latitude}&lng=${wb.longitude}&name=${encodeURIComponent(wb.name)}`;
+
+      // Espèces
+      const fishEl = document.getElementById("spot-fish");
+      fishEl.innerHTML = (wb.fish_species || []).length
+        ? wb.fish_species.map(f => `<span class="tag fish">${esc(f)}</span>`).join("")
+        : "<em>Aucune espèce renseignée</em>";
+
+      // Permis
+      const permitsEl = document.getElementById("spot-permits");
+      const permits = wb.permits || [];
+      if (!wb.permit_required || !permits.length) {
+        permitsEl.innerHTML = `<span class="no-permit">✓ Aucun permis spécifique</span>`;
+      } else {
+        permitsEl.innerHTML = permits.map(p => {
+          const priceHTML = p.price_eur != null
+            ? `<span class="permit-price">${p.price_eur.toFixed(2).replace(".", ",")} €</span>`
+            : "";
+          const linkHTML = p.url
+            ? `<a class="permit-link" href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer">Acheter ce permis →</a>`
+            : "";
+          return `<div class="permit-item">
+            <span class="permit-badge">⚠ ${esc(p.name)}</span>
+            ${p.description ? `<span class="permit-desc">${esc(p.description)}</span>` : ""}
+            <div class="permit-footer">${priceHTML}${linkHTML}</div>
+          </div>`;
+        }).join("");
+      }
+
+      // Techniques
+      const techEl = document.getElementById("spot-techniques");
+      techEl.innerHTML = (wb.allowed_techniques || []).length
+        ? wb.allowed_techniques.map(t => `<span class="tag technique">${esc(t)}</span>`).join("")
+        : "<em>Toutes techniques légales</em>";
+
+      // Itinéraire
+      const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${wb.latitude},${wb.longitude}`;
+      const waze  = `https://waze.com/ul?ll=${wb.latitude},${wb.longitude}&navigate=yes`;
+      document.getElementById("spot-nav").innerHTML = `
+        <a href="${gmaps}" target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn--gmaps">Google Maps →</a>
+        <a href="${waze}"  target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn--waze">Waze →</a>
+      `;
+
+      loadingEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
+
+      // Carte Leaflet
+      const spotMap = L.map("spot-map").setView([wb.latitude, wb.longitude], 14);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 19,
+      }).addTo(spotMap);
+      const typeColor = { river: "#3b82f6", lake: "#22d3b8", pond: "#10b981", canal: "#8b5cf6" };
+      L.circleMarker([wb.latitude, wb.longitude], {
+        radius: 10, color: "#fff", weight: 2,
+        fillColor: typeColor[wb.type] || "#22d3b8", fillOpacity: 0.9,
+      }).addTo(spotMap).bindPopup(esc(wb.name)).openPopup();
+
+      // Notes, photos, commentaires
+      if (typeof loadRatings !== "undefined") loadRatings(wb.id);
+
+      if (typeof loadPhotos !== "undefined") {
+        loadPhotos(
+          wb.id,
+          document.getElementById("spot-photos-grid"),
+          document.getElementById("spot-photos-upload")
+        );
+      }
+
+      loadSpotComments(wb.id);
+      document.getElementById("spot-comment-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await submitSpotComment(wb.id);
+      });
+    }
+
+    async function loadSpotComments(waterBodyId) {
+      const list = document.getElementById("spot-comments-list");
+      list.innerHTML = '<p class="panel-loading-text">Chargement…</p>';
+      try {
+        const comments = await getComments(waterBodyId);
+        if (!comments.length) {
+          list.innerHTML = '<p class="comment-empty">Aucun commentaire pour l\'instant. Soyez le premier !</p>';
+          return;
+        }
+        list.innerHTML = comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-meta">
+              <span class="comment-author">${esc(c.author_name)}</span>
+              <span class="comment-date">${fmtDate(c.created_at)}</span>
+            </div>
+            <p class="comment-content">${esc(c.content)}</p>
+          </div>
+        `).join("");
+      } catch {
+        list.innerHTML = '<p class="comment-empty">Commentaires non disponibles.</p>';
+      }
+    }
+
+    async function submitSpotComment(waterBodyId) {
+      const authorInput = document.getElementById("spot-comment-author");
+      const contentInput = document.getElementById("spot-comment-content");
+      const errorDiv    = document.getElementById("spot-comment-error");
+      const submitBtn   = document.getElementById("spot-comment-submit");
+
+      errorDiv.classList.add("hidden");
+      try {
+        submitBtn.textContent = "Envoi…";
+        submitBtn.disabled = true;
+        await createComment({
+          water_body_id: waterBodyId,
+          author_name:   authorInput.value.trim(),
+          content:       contentInput.value.trim(),
+        });
+        authorInput.value  = "";
+        contentInput.value = "";
+        await loadSpotComments(waterBodyId);
+      } catch {
+        errorDiv.textContent = "Impossible d'envoyer le commentaire. Vérifiez la connexion API.";
+        errorDiv.classList.remove("hidden");
+      } finally {
+        submitBtn.textContent = "Publier";
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>

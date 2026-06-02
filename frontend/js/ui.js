@@ -80,9 +80,16 @@ function renderPanel(wb) {
   panelBody.innerHTML = `
     <div class="panel-tabs">
       <button class="tab-btn active" data-tab="info">Infos</button>
+      <button class="tab-btn" data-tab="photos">Photos</button>
       <button class="tab-btn" data-tab="comments">Commentaires</button>
     </div>
     <div id="tab-info" class="tab-content active">${buildInfoHTML(wb)}</div>
+    <div id="tab-photos" class="tab-content">
+      <div id="photos-grid" class="photos-grid">
+        <p class="panel-loading-text">Cliquez sur l'onglet pour charger.</p>
+      </div>
+      <div id="photos-upload"></div>
+    </div>
     <div id="tab-comments" class="tab-content">
       <div id="comments-list"><p class="panel-loading-text">Cliquez sur l'onglet pour charger.</p></div>
       ${buildCommentFormHTML()}
@@ -97,6 +104,11 @@ function renderPanel(wb) {
       btn.classList.add("active");
       document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
       if (btn.dataset.tab === "comments") loadComments(wb.id);
+      if (btn.dataset.tab === "photos" && typeof loadPhotos !== "undefined") {
+        loadPhotos(wb.id,
+          document.getElementById("photos-grid"),
+          document.getElementById("photos-upload"));
+      }
     });
   });
 
@@ -123,6 +135,7 @@ function buildInfoHTML(wb) {
   const waze  = `https://waze.com/ul?ll=${wb.latitude},${wb.longitude}&navigate=yes`;
 
   return `
+    <a href="spot.html?id=${wb.id}" class="btn-spot-page">Voir la fiche complète →</a>
     <div class="panel-section rating-section">
       <h3>Note</h3>
       <div class="rating-avg-row" id="rating-avg"><span class="rating-loading">Chargement…</span></div>
