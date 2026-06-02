@@ -242,21 +242,35 @@
       })
       .catch(() => {});
 
-    // Peuple le filtre Permis ET le select du formulaire depuis /api/permits/
+    // Peuple le filtre Permis (barre) ET le select du formulaire depuis /api/permits/
+    let _allPermits = [];
+
+    function updateProposePermits(country) {
+      const sel = document.getElementById("propose-permit");
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Aucun permis spécifique</option>';
+      const list = country
+        ? _allPermits.filter(p => p.country === country)
+        : _allPermits;
+      list.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = String(p.id);
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+      if (current && list.some(p => String(p.id) === current)) sel.value = current;
+    }
+
     getPermits()
       .then(permits => {
-        const proposePermitSel = document.getElementById("propose-permit");
+        _allPermits = permits;
         permits.forEach(p => {
-          const opt1 = document.createElement("option");
-          opt1.value = p.id;
-          opt1.textContent = p.name;
-          permitSelect.appendChild(opt1);
-
-          const opt2 = document.createElement("option");
-          opt2.value = p.id;
-          opt2.textContent = p.name;
-          proposePermitSel.appendChild(opt2);
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          permitSelect.appendChild(opt);
         });
+        updateProposePermits("");
       })
       .catch(() => {});
 
@@ -353,6 +367,10 @@
 
     proposeCloseBtn.addEventListener("click", () => {
       proposeOverlay.classList.add("hidden");
+    });
+
+    document.getElementById("propose-country").addEventListener("change", (e) => {
+      updateProposePermits(e.target.value);
     });
 
     proposeOverlay.addEventListener("click", (e) => {
