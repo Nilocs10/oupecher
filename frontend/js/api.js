@@ -58,7 +58,7 @@ async function fetchJSON(path) {
   return res.json();
 }
 
-async function getWaterBodies({ country, type, fish, technique, permit_id } = {}) {
+async function getWaterBodies({ country, type, fish, technique, permit_id, limit = 500, offset = 0 } = {}) {
   try {
     const params = new URLSearchParams();
     if (country)   params.set("country", country);
@@ -66,12 +66,14 @@ async function getWaterBodies({ country, type, fish, technique, permit_id } = {}
     if (fish)      params.set("fish", fish);
     if (technique) params.set("technique", technique);
     if (permit_id) params.set("permit_id", permit_id);
-    const qs = params.toString();
-    const data = await fetchJSON(`/water-bodies${qs ? "?" + qs : ""}`);
+    params.set("limit",  limit);
+    params.set("offset", offset);
+    const data = await fetchJSON(`/water-bodies?${params.toString()}`);
     _apiConnected = true;
     return data;
   } catch {
     _apiConnected = false;
+    if (offset > 0) return [];  // le mode démo ne pagine pas
     let results = DEMO_WATER_BODIES;
     if (country)   results = results.filter(wb => wb.country === country);
     if (type)      results = results.filter(wb => wb.type === type);

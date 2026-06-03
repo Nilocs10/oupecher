@@ -74,15 +74,23 @@ async function loadWaterBodies({ country, type, fish, technique, permit_id } = {
   markers.forEach(m => m.remove());
   markers = [];
 
-  let waterBodies;
+  const PAGE = 500;
+  let offset = 0;
+
   try {
-    waterBodies = await getWaterBodies({ country, type, fish, technique, permit_id });
+    while (true) {
+      const batch = await getWaterBodies({ country, type, fish, technique, permit_id, limit: PAGE, offset });
+
+      // Mise à jour du badge API dès la première réponse
+      if (offset === 0) updateApiStatus();
+
+      batch.forEach(wb => addSpotMarker(wb));
+      offset += PAGE;
+
+      if (batch.length < PAGE) break;  // dernière page
+    }
   } catch (err) {
     console.error("Impossible de charger les cours d'eau :", err);
-    return;
+    if (offset === 0) updateApiStatus();
   }
-
-  updateApiStatus();
-
-  waterBodies.forEach(wb => addSpotMarker(wb));
 }

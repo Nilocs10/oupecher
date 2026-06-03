@@ -667,15 +667,114 @@ header .tagline {
 }
 .nav-btn--waze:hover { background: rgba(0, 205, 188, 0.16); }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
-  #panel {
-    position: absolute;
-    right: 0;
-    top: 56px;
-    bottom: 0;
-    z-index: 500;
+/* ── Bouton filtres (mobile) ── */
+.filters-toggle-btn {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(34, 211, 184, 0.08);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-light);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.filters-toggle-btn:hover,
+.filters-toggle-btn.active { background: rgba(34, 211, 184, 0.18); }
+
+/* ── Mobile (< 768px) ── */
+@media (max-width: 767px) {
+
+  /* 1. Header compact : logo + bouton filtres seulement */
+  header .tagline   { display: none; }
+  header .header-link { display: none; }
+  header .header-auth { display: none; }
+  header #api-status  { display: none; }
+
+  .filters-toggle-btn {
+    display: inline-flex;
+    margin-left: auto;
   }
+
+  /* 2. Filtres en accordéon vertical */
+  #filters {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+  #filters.filters-open { display: flex; }
+  #filters label { font-size: 0.75rem; }
+  #filters select {
+    width: 100%;
+    font-size: 0.92rem;
+    padding: 0.5rem 0.65rem;
+  }
+
+  /* 3. Bottom sheet */
+  #panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 72vh;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 700;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+  }
+  #panel.hidden {
+    transform: translateY(100%) !important;
+    width: 100% !important;
+  }
+  #panel:not(.hidden) {
+    transform: translateY(0);
+  }
+
+  /* Poignée de glissement */
+  #panel::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 2px;
+    margin: 0.65rem auto 0;
+    flex-shrink: 0;
+  }
+
+  /* 4. Contrôles zoom Leaflet ≥ 44 px */
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 1.1rem !important;
+  }
+
+  /* 5. Bouton "Proposer" en haut à droite (pas caché derrière le bottom sheet) */
+  #propose-btn {
+    bottom: auto;
+    top: 0.75rem;
+    left: auto;
+    right: 0.75rem;
+    transform: none;
+    font-size: 0.78rem;
+    padding: 0.4rem 0.85rem;
+  }
+  #propose-btn.active { animation: none; }
 }
 
 /* ── Proposer un spot — bouton flottant ── */

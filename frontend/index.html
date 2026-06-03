@@ -21,6 +21,13 @@
     <a href="permis.html" class="header-link" style="margin-left:auto">Permis</a>
     <div id="auth-nav" class="header-auth" style="margin-left:0"></div>
     <span id="api-status" class="api-badge demo">● Chargement…</span>
+    <button id="filters-toggle" class="filters-toggle-btn" aria-label="Filtres" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filtres
+    </button>
   </header>
 
   <div id="filters">
@@ -444,6 +451,15 @@
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 5000);
     }
+
+    // ── Filtres toggle (mobile) ───────────────────────────────────────────────
+    document.getElementById("filters-toggle").addEventListener("click", () => {
+      const filtersEl = document.getElementById("filters");
+      const btn       = document.getElementById("filters-toggle");
+      const isOpen    = filtersEl.classList.toggle("filters-open");
+      btn.setAttribute("aria-expanded", String(isOpen));
+      btn.classList.toggle("active", isOpen);
+    });
   </script>
 
 </body>
