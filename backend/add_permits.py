@@ -34,55 +34,76 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+_URL_WAL   = "https://permisdepeche.be/fr/home"
+_URL_VLA   = "https://natuurenbos.vlaanderen.be/vissen-en-hengelen/visverlof/types-visverlof"
+_URL_BXL   = "https://environnement.brussels/citoyen/reglementation-et-inspection/obligations-et-autorisations/pecher-bruxelles#le-permis-de-peche"
+
 PERMITS = [
+    # ── Wallonie ──────────────────────────────────────────────────────────────
     {
         "name": "Wallonie A",
         "country": "BE",
         "description": "Pêche de jour depuis la rive, max 2 lignes + épuisette + 5 balances.",
         "price_eur": 20.00,
-        "url": "https://www.peche.wallonie.be",
+        "url": _URL_WAL,
     },
     {
         "name": "Wallonie B",
         "country": "BE",
         "description": "Pêche de jour depuis la rive ou dans l'eau, max 2 lignes + épuisette + 5 balances.",
-        "price_eur": 12.39,
-        "url": "https://www.peche.wallonie.be",
+        "price_eur": 45.00,
+        "url": _URL_WAL,
     },
     {
         "name": "Wallonie C",
         "country": "BE",
         "description": "Pêche de jour depuis la rive ou dans l'eau, max 2 lignes + épuisette + 5 balances + carpe nocturne.",
-        "price_eur": 121.50,
-        "url": "https://www.peche.wallonie.be",
+        "price_eur": 110.00,
+        "url": _URL_WAL,
     },
     {
         "name": "Wallonie T",
         "country": "BE",
         "description": "Valable 14 jours consécutifs, mêmes droits que le permis B.",
-        "price_eur": 12.39,
-        "url": "https://www.peche.wallonie.be",
+        "price_eur": 25.00,
+        "url": _URL_WAL,
     },
+    # ── Flandre ───────────────────────────────────────────────────────────────
     {
         "name": "Flandre jeunesse",
         "country": "BE",
         "description": "Pour les moins de 17 ans, jour et nuit, rive et eau, sans appâts vivants.",
         "price_eur": 5.00,
-        "url": "https://www.visverlof.be",
+        "url": _URL_VLA,
     },
     {
         "name": "Flandre simple",
         "country": "BE",
         "description": "Pêche de jour uniquement depuis la rive ou plateforme, sans appâts vivants.",
         "price_eur": 13.00,
-        "url": "https://www.visverlof.be",
+        "url": _URL_VLA,
     },
     {
         "name": "Flandre grand permis",
         "country": "BE",
         "description": "Pêche jour et nuit, rive et eau, appâts vivants autorisés, max 5 poissons > 15 cm.",
         "price_eur": 48.00,
-        "url": "https://www.visverlof.be",
+        "url": _URL_VLA,
+    },
+    # ── Bruxelles ─────────────────────────────────────────────────────────────
+    {
+        "name": "Bruxelles A",
+        "country": "BE",
+        "description": "Pêche de jour depuis la rive, 1 canne, sans appâts vivants.",
+        "price_eur": 11.05,
+        "url": _URL_BXL,
+    },
+    {
+        "name": "Bruxelles B",
+        "country": "BE",
+        "description": "Pêche de jour depuis la rive, 2 cannes, appâts vivants autorisés.",
+        "price_eur": 23.44,
+        "url": _URL_BXL,
     },
 ]
 
