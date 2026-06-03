@@ -691,11 +691,14 @@ header .tagline {
 /* ── Mobile (< 768px) ── */
 @media (max-width: 767px) {
 
-  /* 1. Header compact : logo + bouton filtres seulement */
-  header .tagline   { display: none; }
+  /* 1. Header compact : logo + auth réduit + bouton filtres */
+  header .tagline     { display: none; }
   header .header-link { display: none; }
-  header .header-auth { display: none; }
   header #api-status  { display: none; }
+
+  /* Auth visible mais compacte : on cache le nom et le lien Favoris */
+  header .header-auth .auth-name   { display: none; }
+  header .header-auth .header-link { display: none; }
 
   .filters-toggle-btn {
     display: inline-flex;
@@ -719,7 +722,7 @@ header .tagline {
     padding: 0.5rem 0.65rem;
   }
 
-  /* 3. Bottom sheet */
+  /* 3. Bottom sheet — z-index 1050 pour couvrir le bouton "Proposer" (z-index:1000) */
   #panel {
     position: fixed;
     top: auto;
@@ -733,7 +736,7 @@ header .tagline {
     border-radius: 16px 16px 0 0;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    z-index: 700;
+    z-index: 1050;
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
   }
   #panel.hidden {
@@ -764,17 +767,12 @@ header .tagline {
     font-size: 1.1rem !important;
   }
 
-  /* 5. Bouton "Proposer" en haut à droite (pas caché derrière le bottom sheet) */
+  /* 5. Bouton "Proposer" — conserve la position centre-bas du desktop.
+        Le bottom sheet (z-index: 1050) le recouvre quand un spot est ouvert. */
   #propose-btn {
-    bottom: auto;
-    top: 0.75rem;
-    left: auto;
-    right: 0.75rem;
-    transform: none;
-    font-size: 0.78rem;
-    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    padding: 0.45rem 1rem;
   }
-  #propose-btn.active { animation: none; }
 }
 
 /* ── Proposer un spot — bouton flottant ── */
