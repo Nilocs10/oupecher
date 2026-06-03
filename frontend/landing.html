@@ -583,9 +583,30 @@
       font-weight: 600;
     }
 
+    /* Séparateurs nav desktop */
+    .nav-sep {
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-weight: 300;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Séparateur avant le premier item auth (entre Voir la carte et auth block) */
+    .nav-right #auth-nav:not(:empty)::before {
+      content: '|';
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-weight: 300;
+      user-select: none;
+      pointer-events: none;
+      margin-right: 0.1rem;
+    }
+
     @media (max-width: 640px) {
       .nav-right { display: none; }
       .hamburger-btn { display: flex; }
+      .nav-sep { display: none; }
     }
   </style>
 </head>
@@ -764,9 +785,9 @@
         const name = session.user.user_metadata?.username
                    || session.user.email.split("@")[0];
         section.innerHTML = `
-          <span class="mobile-menu-user">${_mesc(name)}</span>
           <a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>
-          <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>`;
+          <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>
+          <span class="mobile-menu-user">${_mesc(name)}</span>`;
         document.getElementById("mob-logout").addEventListener("click", async () => {
           await sbClient.auth.signOut();
         });

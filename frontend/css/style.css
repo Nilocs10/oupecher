@@ -667,6 +667,49 @@ header .tagline {
 }
 .nav-btn--waze:hover { background: rgba(0, 205, 188, 0.16); }
 
+/* ── Séparateurs de navigation ── */
+.nav-sep {
+  color: var(--color-text-muted);
+  opacity: 0.4;
+  font-weight: 300;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Séparateur entre le lien Permis et le bloc auth (desktop index.html uniquement) */
+@media (min-width: 768px) {
+  .header-link + .header-auth:not(:empty)::before {
+    content: '|';
+    color: var(--color-text-muted);
+    opacity: 0.4;
+    font-weight: 300;
+    user-select: none;
+    pointer-events: none;
+    margin-right: 0.1rem;
+  }
+}
+
+/* Masquer les séparateurs dans le header mobile */
+@media (max-width: 767px) {
+  header .nav-sep { display: none; }
+}
+
+/* ── Bouton favoris mobile (♥ dans le header index.html) ── */
+.mobile-fav-btn {
+  display: none;
+  color: var(--color-primary-light);
+  font-size: 1.25rem;
+  text-decoration: none;
+  line-height: 1;
+  padding: 0.2rem 0.25rem;
+  transition: color 0.15s;
+}
+.mobile-fav-btn:hover { color: #fb7185; }
+
+@media (max-width: 767px) {
+  .mobile-fav-btn.fav-visible { display: inline-flex; align-items: center; }
+}
+
 /* ── Bouton filtres (mobile) ── */
 .filters-toggle-btn {
   display: none;
