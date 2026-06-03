@@ -507,13 +507,15 @@
     }
 
     function groupPermits(permits) {
-      const ORDER = ["Wallonie", "Flandre", "France"];
+      const ORDER = ["Bruxelles", "Flandre", "Wallonie", "France"];
       const map = {};
 
       for (const p of permits) {
         const n = p.name.toLowerCase();
         let region;
-        if (n.includes("wallonie") || n.includes("wallon")) {
+        if (n.includes("bruxelles") || n.includes("brussels")) {
+          region = "Bruxelles";
+        } else if (n.includes("wallonie") || n.includes("wallon")) {
           region = "Wallonie";
         } else if (n.includes("flandre") || n.includes("flamand") || n.includes("vlaams") || n.includes("sportvis")) {
           region = "Flandre";
