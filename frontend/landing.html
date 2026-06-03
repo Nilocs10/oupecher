@@ -504,9 +504,88 @@
       .hero { padding: 4.5rem 0 4rem; }
       .hero h1 { font-size: 1.85rem; }
       .features-grid { grid-template-columns: 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; }
       .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
       section { padding: 3.5rem 0; }
+    }
+
+    /* ── Hamburger (mobile) ── */
+    .hamburger-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      color: var(--text);
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .hamburger-btn:hover { background: var(--blue-glow); }
+    .hamburger-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 1px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      padding: 0.4rem 1.5rem 1rem;
+    }
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu-link {
+      display: block;
+      padding: 0.8rem 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
+      transition: color 0.15s;
+    }
+    .mobile-menu-link:last-child { border-bottom: none; }
+    .mobile-menu-link:hover { color: var(--blue-light); }
+
+    .mobile-menu-user {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.6rem 0 0.1rem;
+    }
+    .mobile-menu-logout { color: var(--text-muted); }
+    .mobile-menu-logout:hover { color: #fca5a5 !important; }
+
+    .mobile-menu-cta {
+      margin-top: 0.5rem;
+      text-align: center;
+      background: var(--blue-glow);
+      border: 1px solid var(--blue) !important;
+      color: var(--blue-light) !important;
+      border-radius: 8px;
+      padding: 0.65rem !important;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .nav-right { display: none; }
+      .hamburger-btn { display: flex; }
     }
   </style>
 </head>
@@ -515,13 +594,21 @@
   <!-- ── Header ──────────────────────────────────────────────────────────── -->
   <header>
     <nav class="container">
-      <div class="logo">OùPêcher<span> ·</span></div>
+      <a href="landing.html" class="logo">OùPêcher<span> ·</span></a>
       <div class="nav-right">
         <a href="permis.html" class="header-link">Permis</a>
         <a href="index.html" class="btn btn-ghost">Voir la carte →</a>
         <div id="auth-nav"></div>
       </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <a href="permis.html"  class="mobile-menu-link">Permis</a>
+      <a href="index.html"   class="mobile-menu-link">Explorer la carte →</a>
+      <div id="mobile-auth-section"></div>
+    </div>
   </header>
 
   <!-- ── Hero ────────────────────────────────────────────────────────────── -->
@@ -644,5 +731,58 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/auth.js"></script>
+  <script>
+    // ── Hamburger toggle ──────────────────────────────────────────────────────
+    const _hBtn  = document.getElementById("hamburger-btn");
+    const _hMenu = document.getElementById("mobile-menu");
+
+    _hBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = _hMenu.classList.toggle("open");
+      _hBtn.classList.toggle("open", open);
+      _hBtn.setAttribute("aria-expanded", String(open));
+      _hMenu.setAttribute("aria-hidden",  String(!open));
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!_hMenu.contains(e.target) && e.target !== _hBtn) {
+        _hMenu.classList.remove("open");
+        _hBtn.classList.remove("open");
+        _hBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // ── Auth dans le menu mobile ──────────────────────────────────────────────
+    function _mesc(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    async function initMobileAuth() {
+      if (typeof sbClient === "undefined") return;
+      const { data: { session } } = await sbClient.auth.getSession();
+      const section = document.getElementById("mobile-auth-section");
+      if (!section) return;
+      if (session) {
+        const name = session.user.user_metadata?.username
+                   || session.user.email.split("@")[0];
+        section.innerHTML = `
+          <span class="mobile-menu-user">${_mesc(name)}</span>
+          <a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>
+          <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>`;
+        document.getElementById("mob-logout").addEventListener("click", async () => {
+          await sbClient.auth.signOut();
+          window.location.reload();
+        });
+      } else {
+        section.innerHTML =
+          `<a href="login.html" class="mobile-menu-link mobile-menu-cta">Se connecter</a>`;
+      }
+    }
+
+    initMobileAuth();
+    if (typeof sbClient !== "undefined") {
+      sbClient.auth.onAuthStateChange(() => initMobileAuth());
+    }
+  </script>
 </body>
 </html>

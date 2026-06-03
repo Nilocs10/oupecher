@@ -26,7 +26,7 @@
            stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true">
         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
       </svg>
-      Filtres
+      <span id="filters-toggle-label">Filtres</span>
     </button>
   </header>
 
@@ -281,7 +281,15 @@
       })
       .catch(() => {});
 
+    function updateFilterCount() {
+      const n = [countrySelect, typeSelect, fishSelect, techniqueSelect, permitSelect]
+        .filter(s => s.value).length;
+      const label = document.getElementById("filters-toggle-label");
+      if (label) label.textContent = n > 0 ? `Filtres (${n})` : "Filtres";
+    }
+
     function applyFilters() {
+      updateFilterCount();
       loadWaterBodies({
         country:   countrySelect.value   || undefined,
         type:      typeSelect.value      || undefined,
