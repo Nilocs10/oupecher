@@ -408,6 +408,7 @@
     .mobile-menu-link { display: block; padding: 0.8rem 0; font-size: 0.95rem; font-weight: 500; color: var(--text); text-decoration: none; border: none; border-bottom: 1px solid rgba(255,255,255,0.06); background: none; cursor: pointer; font-family: inherit; text-align: left; width: 100%; transition: color 0.15s; }
     .mobile-menu-link:last-child { border-bottom: none; }
     .mobile-menu-link:hover { color: var(--blue-light); }
+    #mobile-fav-section > .mobile-menu-link { border-bottom: 1px solid rgba(255,255,255,0.06); }
     .mobile-menu-user { display: block; font-size: 0.8rem; color: var(--text-muted); padding: 0.6rem 0 0.1rem; }
     .mobile-menu-logout { color: var(--text-muted); }
     .mobile-menu-cta { margin-top: 0.5rem; text-align: center; background: var(--blue-glow); border: 1px solid var(--blue) !important; color: var(--blue-light) !important; border-radius: 8px; padding: 0.65rem !important; font-weight: 600; }
@@ -430,8 +431,9 @@
       </button>
     </nav>
     <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-      <a href="permis.html"  class="mobile-menu-link active">Permis</a>
       <a href="index.html"   class="mobile-menu-link">Explorer la carte →</a>
+      <div id="mobile-fav-section"></div>
+      <a href="permis.html"  class="mobile-menu-link active">Permis</a>
       <div id="mobile-auth-section"></div>
     </div>
   </header>
@@ -620,17 +622,18 @@
       return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
     function renderMobileMenu(session) {
-      const sec = document.getElementById("mobile-auth-section");
-      if (!sec) return;
+      const favSec  = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
       if (session) {
         const name = session.user.user_metadata?.username || session.user.email.split("@")[0];
-        sec.innerHTML = `
-          <a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>
+        if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
           <button class="mobile-menu-link mobile-menu-logout" id="_mob-out">Déconnexion</button>
           <span class="mobile-menu-user">${_m(name)}</span>`;
         document.getElementById("_mob-out")?.addEventListener("click", () => sbClient.auth.signOut());
       } else {
-        sec.innerHTML = `
+        if (favSec)  favSec.innerHTML  = "";
+        if (authSec) authSec.innerHTML = `
           <a href="login.html"            class="mobile-menu-link">Connexion</a>
           <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
       }

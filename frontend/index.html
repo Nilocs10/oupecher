@@ -21,7 +21,6 @@
     <a href="permis.html" class="header-link" style="margin-left:auto">Permis</a>
     <div id="auth-nav" class="header-auth" style="margin-left:0"></div>
     <span id="api-status" class="api-badge demo">● Chargement…</span>
-    <a href="favoris.html" id="mobile-fav-btn" class="mobile-fav-btn" aria-label="Mes favoris">♥</a>
     <button id="filters-toggle" class="filters-toggle-btn" aria-label="Filtres" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
            stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true">
@@ -29,7 +28,16 @@
       </svg>
       <span id="filters-toggle-label">Filtres</span>
     </button>
+    <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </header>
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <a href="index.html"   class="mobile-menu-link active">Explorer la carte →</a>
+    <div id="mobile-fav-section"></div>
+    <a href="permis.html"  class="mobile-menu-link">Permis</a>
+    <div id="mobile-auth-section"></div>
+  </div>
 
   <div id="filters">
     <label for="filter-country">Pays</label>
@@ -69,6 +77,10 @@
     <select id="filter-permit">
       <option value="">Tous</option>
     </select>
+
+    <button id="filter-favs" class="filter-fav-btn" title="Afficher uniquement mes spots favoris">
+      ♥ Mes favoris
+    </button>
   </div>
 
   <div id="app">
@@ -282,21 +294,25 @@
       })
       .catch(() => {});
 
+    let favFilterActive = false;
+
     function updateFilterCount() {
       const n = [countrySelect, typeSelect, fishSelect, techniqueSelect, permitSelect]
-        .filter(s => s.value).length;
+        .filter(s => s.value).length + (favFilterActive ? 1 : 0);
       const label = document.getElementById("filters-toggle-label");
       if (label) label.textContent = n > 0 ? `Filtres (${n})` : "Filtres";
     }
 
-    function applyFilters() {
+    async function applyFilters() {
       updateFilterCount();
+      if (favFilterActive) await favoritesReady();
       loadWaterBodies({
-        country:   countrySelect.value   || undefined,
-        type:      typeSelect.value      || undefined,
-        fish:      fishSelect.value      || undefined,
-        technique: techniqueSelect.value || undefined,
-        permit_id: permitSelect.value    || undefined,
+        country:        countrySelect.value   || undefined,
+        type:           typeSelect.value      || undefined,
+        fish:           fishSelect.value      || undefined,
+        technique:      techniqueSelect.value || undefined,
+        permit_id:      permitSelect.value    || undefined,
+        favorites_only: favFilterActive       || undefined,
       });
     }
 
@@ -461,11 +477,68 @@
       setTimeout(() => toast.remove(), 5000);
     }
 
-    // ── Bouton ♥ favoris mobile : visible seulement si connecté ─────────────
+    // ── Hamburger toggle ─────────────────────────────────────────────────────
+    (function () {
+      const hBtn  = document.getElementById("hamburger-btn");
+      const hMenu = document.getElementById("mobile-menu");
+      if (!hBtn || !hMenu) return;
+      hBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = hMenu.classList.toggle("open");
+        hBtn.classList.toggle("open", open);
+        hBtn.setAttribute("aria-expanded", String(open));
+        hMenu.setAttribute("aria-hidden", String(!open));
+      });
+      document.addEventListener("click", (e) => {
+        if (!hMenu.contains(e.target) && e.target !== hBtn) {
+          hMenu.classList.remove("open");
+          hBtn.classList.remove("open");
+          hBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+    })();
+
+    // ── Menu mobile — rendu auth ──────────────────────────────────────────────
+    function _mi(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function renderMobileMenu(session) {
+      const favSec  = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
+      if (session) {
+        const name = session.user.user_metadata?.username || session.user.email.split("@")[0];
+        if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
+          <button class="mobile-menu-link mobile-menu-logout" id="_mob-out">Déconnexion</button>
+          <span class="mobile-menu-user">${_mi(name)}</span>`;
+        document.getElementById("_mob-out")?.addEventListener("click", () => sbClient.auth.signOut());
+      } else {
+        if (favSec)  favSec.innerHTML  = "";
+        if (authSec) authSec.innerHTML = `
+          <a href="login.html"            class="mobile-menu-link">Connexion</a>
+          <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
+      }
+    }
+
+    // ── Bouton ♥ favoris dans les filtres ────────────────────────────────────
+    const favFilterBtn = document.getElementById("filter-favs");
+
+    favFilterBtn.addEventListener("click", async () => {
+      favFilterActive = !favFilterActive;
+      favFilterBtn.classList.toggle("active", favFilterActive);
+      await applyFilters();
+    });
+
     if (typeof sbClient !== "undefined") {
       sbClient.auth.onAuthStateChange((_event, session) => {
-        document.getElementById("mobile-fav-btn")
-          ?.classList.toggle("fav-visible", !!session);
+        favFilterBtn.classList.toggle("fav-btn-visible", !!session);
+        if (!session && favFilterActive) {
+          favFilterActive = false;
+          favFilterBtn.classList.remove("active");
+          applyFilters();
+        }
+        renderMobileMenu(session);
       });
     }
 

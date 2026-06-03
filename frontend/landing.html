@@ -580,6 +580,7 @@
     }
     .mobile-menu-link:last-child { border-bottom: none; }
     .mobile-menu-link:hover { color: var(--blue-light); }
+    #mobile-fav-section > .mobile-menu-link { border-bottom: 1px solid rgba(255,255,255,0.07); }
 
     .mobile-menu-user {
       display: block;
@@ -645,8 +646,9 @@
       </button>
     </nav>
     <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-      <a href="permis.html"  class="mobile-menu-link">Permis</a>
       <a href="index.html"   class="mobile-menu-link">Explorer la carte →</a>
+      <div id="mobile-fav-section"></div>
+      <a href="permis.html"  class="mobile-menu-link">Permis</a>
       <div id="mobile-auth-section"></div>
     </div>
   </header>
@@ -798,20 +800,21 @@
     }
 
     function renderMobileAuth(session) {
-      const section = document.getElementById("mobile-auth-section");
-      if (!section) return;
+      const favSec  = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
       if (session) {
         const name = session.user.user_metadata?.username
                    || session.user.email.split("@")[0];
-        section.innerHTML = `
-          <a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>
+        if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
           <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>
           <span class="mobile-menu-user">${_mesc(name)}</span>`;
-        document.getElementById("mob-logout").addEventListener("click", async () => {
+        document.getElementById("mob-logout")?.addEventListener("click", async () => {
           await sbClient.auth.signOut();
         });
       } else {
-        section.innerHTML = `
+        if (favSec)  favSec.innerHTML  = "";
+        if (authSec) authSec.innerHTML = `
           <a href="login.html"            class="mobile-menu-link">Connexion</a>
           <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
       }

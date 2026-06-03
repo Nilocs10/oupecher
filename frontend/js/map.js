@@ -70,7 +70,7 @@ function updateApiStatus() {
   }
 }
 
-async function loadWaterBodies({ country, type, fish, technique, permit_id } = {}) {
+async function loadWaterBodies({ country, type, fish, technique, permit_id, favorites_only } = {}) {
   markers.forEach(m => m.remove());
   markers = [];
 
@@ -84,7 +84,10 @@ async function loadWaterBodies({ country, type, fish, technique, permit_id } = {
       // Mise à jour du badge API dès la première réponse
       if (offset === 0) updateApiStatus();
 
-      batch.forEach(wb => addSpotMarker(wb));
+      batch.forEach(wb => {
+        if (favorites_only && typeof isFavorited === "function" && !isFavorited(wb.id)) return;
+        addSpotMarker(wb);
+      });
       offset += PAGE;
 
       if (batch.length < PAGE) break;  // dernière page
