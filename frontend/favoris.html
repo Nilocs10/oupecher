@@ -237,10 +237,28 @@
     }
     .btn-map:hover { background: var(--blue-light); }
 
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo { font-family: 'Lora', serif; font-size: 1.1rem; color: var(--blue-light); }
+    .footer-links { display: flex; gap: 1.5rem; list-style: none; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.82rem; color: var(--muted); transition: color 0.15s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.78rem; color: var(--muted); }
+
     /* ── Responsive ── */
     @media (max-width: 640px) {
       .fav-grid { grid-template-columns: 1fr; }
       main { padding: 2rem 1rem 3rem; }
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
     }
 
     /* ── Hamburger nav ── */
@@ -362,6 +380,20 @@
     <p class="page-sub" id="fav-count"></p>
     <div id="fav-list"><p class="state-msg">Chargement…</p></div>
   </main>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">OùPêcher</div>
+      <ul class="footer-links">
+        <li><a href="landing.html#features">Fonctionnalités</a></li>
+        <li><a href="permis.html">Permis</a></li>
+        <li><a href="index.html">Carte</a></li>
+        <li><a href="legal.html">Mentions légales</a></li>
+      </ul>
+      <p class="footer-copy">© 2025 OùPêcher · Belgique &amp; France</p>
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- HIDE_FAV_LINK évite l'auto-lien "Mes favoris" sur cette même page -->
