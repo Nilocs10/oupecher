@@ -447,8 +447,26 @@
     .nav-right {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
     }
+
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.15rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn-cta:hover { background: var(--blue-light); }
 
     .auth-name {
       font-size: 0.82rem;
@@ -590,9 +608,10 @@
       font-weight: 300;
       user-select: none;
       pointer-events: none;
+      margin: 0 0.45rem;
     }
 
-    /* Séparateur avant le premier item auth (entre Voir la carte et auth block) */
+    /* Séparateur entre Permis et le bloc auth */
     .nav-right #auth-nav:not(:empty)::before {
       content: '|';
       color: var(--text-muted);
@@ -600,7 +619,7 @@
       font-weight: 300;
       user-select: none;
       pointer-events: none;
-      margin-right: 0.1rem;
+      margin: 0 0.45rem;
     }
 
     @media (max-width: 640px) {
@@ -618,8 +637,8 @@
       <a href="landing.html" class="logo">OùPêcher<span> ·</span></a>
       <div class="nav-right">
         <a href="permis.html" class="header-link">Permis</a>
-        <a href="index.html" class="btn btn-ghost">Voir la carte →</a>
         <div id="auth-nav"></div>
+        <a href="index.html" class="btn-cta">Voir la carte →</a>
       </div>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
