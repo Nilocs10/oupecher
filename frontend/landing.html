@@ -757,9 +757,7 @@
       return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
-    async function initMobileAuth() {
-      if (typeof sbClient === "undefined") return;
-      const { data: { session } } = await sbClient.auth.getSession();
+    function renderMobileAuth(session) {
       const section = document.getElementById("mobile-auth-section");
       if (!section) return;
       if (session) {
@@ -771,17 +769,17 @@
           <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>`;
         document.getElementById("mob-logout").addEventListener("click", async () => {
           await sbClient.auth.signOut();
-          window.location.reload();
         });
       } else {
-        section.innerHTML =
-          `<a href="login.html" class="mobile-menu-link mobile-menu-cta">Se connecter</a>`;
+        section.innerHTML = `
+          <a href="login.html"            class="mobile-menu-link">Connexion</a>
+          <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
       }
     }
 
-    initMobileAuth();
     if (typeof sbClient !== "undefined") {
-      sbClient.auth.onAuthStateChange(() => initMobileAuth());
+      // onAuthStateChange fires immediately with the current session, then on every change
+      sbClient.auth.onAuthStateChange((_event, session) => renderMobileAuth(session));
     }
   </script>
 </body>
