@@ -15,7 +15,7 @@ class PermitInfo(BaseModel):
 
 class WaterBodyBase(BaseModel):
     name: str
-    type: Literal["river", "lake", "pond", "canal"]
+    type: Literal["river", "lake", "pond", "canal", "sea"]
     country: Literal["BE", "FR"]
     region: str | None = None
     latitude: float
