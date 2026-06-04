@@ -72,7 +72,7 @@ async function updateFavBtn(waterBodyId) {
 }
 
 function renderPanel(wb) {
-  const typeLabel = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal" };
+  const typeLabel = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal", sea: "Mer / Plage" };
   panelSubtitle.textContent =
     `${typeLabel[wb.type] ?? wb.type} • ${wb.country === "BE" ? "Belgique" : "France"}` +
     `${wb.region ? " – " + wb.region : ""}`;
@@ -132,7 +132,6 @@ async function initEnrichSection(wb) {
 
   const isAdmin = session.user.email === ADMIN_EMAIL;
 
-  // Espèces manquantes
   let allFish = [];
   try { allFish = await getFishList(); } catch {}
   const existingFish = new Set(wb.fish_species || []);
@@ -142,12 +141,13 @@ async function initEnrichSection(wb) {
     .map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`)
     .join("");
 
-  // Permis manquants (filtrés par pays du spot)
-  let allPermits = [];
-  try { allPermits = await getPermits(wb.country); } catch {}
-  const existingPermitIds = new Set((wb.permits || []).map(p => p.id));
-  const permitOptions = allPermits
-    .filter(p => !existingPermitIds.has(p.id))
+  let newPermits = [];
+  try {
+    const all = await getPermits(wb.country);
+    const existingIds = new Set((wb.permits || []).map(p => p.id));
+    newPermits = all.filter(p => !existingIds.has(p.id));
+  } catch {}
+  const permitOptions = newPermits
     .map(p => `<option value="${p.id}">${esc(p.name)}${p.price_eur != null ? ` – ${p.price_eur.toFixed(2).replace(".",",")} €` : ""}</option>`)
     .join("");
 
@@ -161,40 +161,44 @@ async function initEnrichSection(wb) {
           <button type="button" class="enrich-type-btn" data-etype="type_eau">Corriger le type</button>
           <button type="button" class="enrich-type-btn" data-etype="permis">+ Permis</button>
         </div>
-        <form id="enrich-form" novalidate>
-          <div id="enrich-field-espece" class="enrich-field">
-            <select id="enrich-fish-select">
-              <option value="">Choisir une espèce manquante…</option>
-              ${fishOptions}
-            </select>
-          </div>
-          <div id="enrich-field-technique" class="enrich-field hidden">
-            <input type="text" id="enrich-tech-input"
-              placeholder="Ex : Pêche à la traîne, Float tube…" maxlength="100" autocomplete="off">
-          </div>
-          <div id="enrich-field-type_eau" class="enrich-field hidden">
-            <select id="enrich-type-select">
-              <option value="">Choisir le bon type…</option>
-              <option value="river">Rivière</option>
-              <option value="lake">Lac</option>
-              <option value="pond">Étang</option>
-              <option value="canal">Canal</option>
-            </select>
-          </div>
-          <div id="enrich-field-permis" class="enrich-field hidden">
-            <select id="enrich-permit-select">
-              <option value="">Choisir un permis manquant…</option>
-              ${permitOptions || '<option disabled>Aucun permis disponible</option>'}
-            </select>
-          </div>
-          <div id="enrich-msg" class="enrich-msg"></div>
-          <button type="submit" id="enrich-submit" class="enrich-submit">Soumettre la suggestion</button>
-        </form>
+        <div id="enrich-field-espece" class="enrich-field">
+          <select id="enrich-fish-select">
+            <option value="">Choisir une espèce manquante…</option>
+            ${fishOptions}
+          </select>
+        </div>
+        <div id="enrich-field-technique" class="enrich-field hidden">
+          <input type="text" id="enrich-tech-input"
+            placeholder="Ex : Pêche à la traîne, Float tube…" maxlength="100" autocomplete="off">
+        </div>
+        <div id="enrich-field-type_eau" class="enrich-field hidden">
+          <select id="enrich-type-select">
+            <option value="">Choisir le bon type…</option>
+            <option value="river">Rivière</option>
+            <option value="lake">Lac</option>
+            <option value="pond">Étang</option>
+            <option value="canal">Canal</option>
+            <option value="sea">Mer / Plage</option>
+          </select>
+        </div>
+        <div id="enrich-field-permis" class="enrich-field hidden">
+          <select id="enrich-permit-select">
+            <option value="">Choisir un permis manquant…</option>
+            ${permitOptions || '<option disabled>Aucun permis disponible</option>'}
+          </select>
+        </div>
+        <button type="button" id="enrich-add-btn" class="enrich-add-btn">+ Ajouter à la liste</button>
+        <ul class="enrich-cart hidden" id="enrich-cart"></ul>
+        <div id="enrich-msg" class="enrich-msg"></div>
+        <button type="button" id="enrich-submit" class="enrich-submit" disabled>Soumettre (0)</button>
       </div>
     </div>
   `;
 
   let currentType = "espece";
+  const pendingItems = [];
+  const TYPE_DISPLAY  = { espece: "Espèce", technique: "Technique", type_eau: "Type d'eau", permis: "Permis" };
+  const WATER_DISPLAY = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal", sea: "Mer / Plage" };
 
   el.querySelector("#enrich-toggle").addEventListener("click", () => {
     el.querySelector("#enrich-form-wrapper").classList.toggle("hidden");
@@ -211,63 +215,93 @@ async function initEnrichSection(wb) {
     });
   });
 
-  el.querySelector("#enrich-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const msgEl     = el.querySelector("#enrich-msg");
-    const submitBtn = el.querySelector("#enrich-submit");
+  function cartLabel(type, valeur) {
+    if (type === "type_eau") return WATER_DISPLAY[valeur] ?? valeur;
+    if (type === "permis") {
+      const p = newPermits.find(p => String(p.id) === valeur);
+      return p ? `${p.name}${p.price_eur != null ? ` (${p.price_eur.toFixed(2).replace(".",",")} €)` : ""}` : valeur;
+    }
+    return valeur;
+  }
 
+  function renderCart() {
+    const cartEl    = el.querySelector("#enrich-cart");
+    const submitBtn = el.querySelector("#enrich-submit");
+    if (!pendingItems.length) {
+      cartEl.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Soumettre (0)";
+      return;
+    }
+    cartEl.classList.remove("hidden");
+    cartEl.innerHTML = pendingItems.map((item, i) => `
+      <li class="enrich-cart-item">
+        <span class="enrich-cart-type">${TYPE_DISPLAY[item.type]}</span>
+        <span class="enrich-cart-val">${esc(item.label)}</span>
+        ${item.isDirect ? '<span class="enrich-cart-direct">direct</span>' : ""}
+        <button type="button" class="enrich-cart-remove" data-i="${i}">×</button>
+      </li>`).join("");
+    submitBtn.disabled = false;
+    submitBtn.textContent = `Soumettre (${pendingItems.length})`;
+    cartEl.querySelectorAll(".enrich-cart-remove").forEach(btn => {
+      btn.addEventListener("click", () => { pendingItems.splice(+btn.dataset.i, 1); renderCart(); });
+    });
+  }
+
+  el.querySelector("#enrich-add-btn").addEventListener("click", () => {
+    const msgEl = el.querySelector("#enrich-msg");
     let valeur = "";
     if      (currentType === "espece")    valeur = el.querySelector("#enrich-fish-select").value;
     else if (currentType === "technique") valeur = el.querySelector("#enrich-tech-input").value.trim();
     else if (currentType === "type_eau")  valeur = el.querySelector("#enrich-type-select").value;
     else if (currentType === "permis")    valeur = el.querySelector("#enrich-permit-select").value;
 
-    if (!valeur) {
-      msgEl.textContent = "Veuillez remplir le champ.";
-      msgEl.className = "enrich-msg enrich-error";
-      return;
+    if (!valeur) { msgEl.textContent = "Veuillez sélectionner une valeur."; msgEl.className = "enrich-msg enrich-error"; return; }
+    if (pendingItems.some(i => i.type === currentType && i.valeur === valeur)) {
+      msgEl.textContent = "Déjà dans la liste."; msgEl.className = "enrich-msg enrich-error"; return;
     }
+    pendingItems.push({ type: currentType, valeur, label: cartLabel(currentType, valeur), isDirect: currentType === "permis" && isAdmin });
+    renderCart();
+    msgEl.textContent = "";
+    if (currentType === "technique") el.querySelector("#enrich-tech-input").value = "";
+  });
 
+  el.querySelector("#enrich-submit").addEventListener("click", async () => {
+    if (!pendingItems.length) return;
+    const msgEl     = el.querySelector("#enrich-msg");
+    const submitBtn = el.querySelector("#enrich-submit");
     submitBtn.disabled = true;
     submitBtn.textContent = "Envoi…";
-    msgEl.textContent = "";
 
     const { data: { session: s } } = await sbClient.auth.getSession();
+    const errors = [];
 
-    // Admin + permis : liaison directe sans validation
-    if (currentType === "permis" && isAdmin) {
-      const { error } = await sbClient.from("water_body_permits").insert({
-        water_body_id: wb.id,
-        permit_id:     parseInt(valeur),
-      });
-      if (error) {
-        msgEl.textContent = "Erreur : " + error.message;
-        msgEl.className = "enrich-msg enrich-error";
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Soumettre la suggestion";
-      } else {
-        msgEl.textContent = "Permis lié directement !";
-        msgEl.className = "enrich-msg enrich-success";
-        submitBtn.textContent = "Lié ✓";
-      }
-      return;
+    const directItems = pendingItems.filter(i => i.isDirect);
+    if (directItems.length) {
+      const { error } = await sbClient.from("water_body_permits").insert(
+        directItems.map(i => ({ water_body_id: wb.id, permit_id: parseInt(i.valeur) }))
+      );
+      if (error) errors.push(error.message);
     }
 
-    // Cas général : suggestion soumise pour validation
-    const { error } = await sbClient.from("spot_suggestions").insert({
-      water_body_id: wb.id,
-      user_id:       s.user.id,
-      type:          currentType,
-      valeur,
-    });
+    const suggItems = pendingItems.filter(i => !i.isDirect);
+    if (suggItems.length) {
+      const { error } = await sbClient.from("spot_suggestions").insert(
+        suggItems.map(i => ({ water_body_id: wb.id, user_id: s.user.id, type: i.type, valeur: i.valeur }))
+      );
+      if (error) errors.push(error.message);
+    }
 
-    if (error) {
-      msgEl.textContent = "Erreur : " + error.message;
+    if (errors.length) {
+      msgEl.textContent = errors.join(" | ");
       msgEl.className = "enrich-msg enrich-error";
       submitBtn.disabled = false;
-      submitBtn.textContent = "Soumettre la suggestion";
+      submitBtn.textContent = `Soumettre (${pendingItems.length})`;
     } else {
-      msgEl.textContent = "Suggestion envoyée, merci !";
+      const n = pendingItems.length;
+      pendingItems.length = 0;
+      renderCart();
+      msgEl.textContent = `${n} suggestion(s) envoyée(s), merci !`;
       msgEl.className = "enrich-msg enrich-success";
       submitBtn.textContent = "Envoyé ✓";
     }
@@ -281,7 +315,9 @@ function buildInfoHTML(wb) {
 
   const techniqueTags = (wb.allowed_techniques || []).length
     ? wb.allowed_techniques.map(t => `<span class="tag technique">${esc(t)}</span>`).join("")
-    : "<em>Toutes techniques légales</em>";
+    : wb.type === "sea"
+      ? "<em>Toutes techniques légales</em>"
+      : `<span class="no-data-warn">⚠️ Techniques non renseignées — vérifiez la réglementation locale</span>`;
 
   const permitHTML = buildPermitHTML(wb);
 
@@ -321,36 +357,32 @@ function buildInfoHTML(wb) {
 }
 
 function buildPermitHTML(wb) {
-  const permits = wb.permits || [];
+  const permits    = wb.permits || [];
   const hasSociety = wb.private_society_name != null;
 
   if (!permits.length && !hasSociety) {
-    return `<span class="no-permit">✓ Aucun permis spécifique</span>`;
+    return wb.type === "sea"
+      ? `<span class="no-permit">✓ Aucun permis requis</span>`
+      : `<span class="no-data-warn">⚠️ Se renseigner avant de pêcher</span>`;
   }
 
   let html = permits.map(p => {
-    const priceHTML = p.price_eur != null
+    const price = p.price_eur != null
       ? `<span class="permit-price">${p.price_eur.toFixed(2).replace(".", ",")} €</span>`
       : "";
-    const linkHTML = p.url
-      ? `<a class="permit-link" href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer">Acheter ce permis →</a>`
+    const link = p.url
+      ? `<a class="permit-link" href="${safeUrl(p.url)}" target="_blank" rel="noopener noreferrer">Acheter →</a>`
       : "";
-    return `
-      <div class="permit-item">
-        <span class="permit-badge">⚠ ${esc(p.name)}</span>
-        ${p.description ? `<span class="permit-desc">${esc(p.description)}</span>` : ""}
-        <div class="permit-footer">${priceHTML}${linkHTML}</div>
-      </div>`;
+    return `<div class="permit-item permit-compact">
+      <span class="permit-badge">⚠ ${esc(p.name)}</span>${price}${link}
+    </div>`;
   }).join("");
 
   if (hasSociety) {
     const label = wb.private_society_name
       ? `Permis régional + ${esc(wb.private_society_name)}`
       : "Permis régional + société locale requise";
-    html += `
-      <div class="permit-item">
-        <span class="permit-badge">⚠ ${label}</span>
-      </div>`;
+    html += `<div class="permit-item permit-compact"><span class="permit-badge">⚠ ${label}</span></div>`;
   }
 
   return html;
