@@ -72,6 +72,8 @@
             <div class="tags" id="spot-techniques"></div>
           </div>
 
+          <div id="spot-enrich-section"></div>
+
           <div class="spot-section">
             <h3>Itinéraire</h3>
             <div class="nav-btns" id="spot-nav"></div>
@@ -234,6 +236,118 @@
       document.getElementById("spot-comment-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         await submitSpotComment(wb.id);
+      });
+
+      initSpotEnrichSection(wb);
+    }
+
+    async function initSpotEnrichSection(wb) {
+      const el = document.getElementById("spot-enrich-section");
+      if (!el || typeof sbClient === "undefined") return;
+
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (!session) return;
+
+      let allFish = [];
+      try { allFish = await getFishList(); } catch {}
+      const existing = new Set(wb.fish_species || []);
+      const fishOptions = allFish
+        .filter(f => !existing.has(f.name))
+        .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+        .map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`)
+        .join("");
+
+      el.innerHTML = `
+        <div class="spot-section enrich-section">
+          <button class="enrich-toggle" id="spot-enrich-toggle" type="button">✏ Enrichir ce spot</button>
+          <div id="spot-enrich-wrapper" class="enrich-form-wrapper hidden">
+            <div class="enrich-type-tabs">
+              <button type="button" class="enrich-type-btn active" data-etype="espece">+ Espèce</button>
+              <button type="button" class="enrich-type-btn" data-etype="technique">+ Technique</button>
+              <button type="button" class="enrich-type-btn" data-etype="type_eau">Corriger le type</button>
+            </div>
+            <form id="spot-enrich-form" novalidate>
+              <div id="spot-enrich-field-espece" class="enrich-field">
+                <select id="spot-enrich-fish">
+                  <option value="">Choisir une espèce manquante…</option>
+                  ${fishOptions}
+                </select>
+              </div>
+              <div id="spot-enrich-field-technique" class="enrich-field hidden">
+                <input type="text" id="spot-enrich-tech"
+                  placeholder="Ex : Pêche à la traîne, Float tube…" maxlength="100" autocomplete="off">
+              </div>
+              <div id="spot-enrich-field-type_eau" class="enrich-field hidden">
+                <select id="spot-enrich-type">
+                  <option value="">Choisir le bon type…</option>
+                  <option value="river">Rivière</option>
+                  <option value="lake">Lac</option>
+                  <option value="pond">Étang</option>
+                  <option value="canal">Canal</option>
+                </select>
+              </div>
+              <div id="spot-enrich-msg" class="enrich-msg"></div>
+              <button type="submit" id="spot-enrich-submit" class="enrich-submit">Soumettre la suggestion</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      let currentType = "espece";
+
+      el.querySelector("#spot-enrich-toggle").addEventListener("click", () => {
+        el.querySelector("#spot-enrich-wrapper").classList.toggle("hidden");
+      });
+
+      el.querySelectorAll(".enrich-type-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          currentType = btn.dataset.etype;
+          el.querySelectorAll(".enrich-type-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          el.querySelectorAll(".enrich-field").forEach(f => f.classList.add("hidden"));
+          el.querySelector(`#spot-enrich-field-${currentType}`).classList.remove("hidden");
+          el.querySelector("#spot-enrich-msg").textContent = "";
+        });
+      });
+
+      el.querySelector("#spot-enrich-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const msgEl     = el.querySelector("#spot-enrich-msg");
+        const submitBtn = el.querySelector("#spot-enrich-submit");
+
+        let valeur = "";
+        if (currentType === "espece")    valeur = el.querySelector("#spot-enrich-fish").value;
+        else if (currentType === "technique") valeur = el.querySelector("#spot-enrich-tech").value.trim();
+        else if (currentType === "type_eau")  valeur = el.querySelector("#spot-enrich-type").value;
+
+        if (!valeur) {
+          msgEl.textContent = "Veuillez remplir le champ.";
+          msgEl.className = "enrich-msg enrich-error";
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Envoi…";
+        msgEl.textContent = "";
+
+        const { data: { session: s } } = await sbClient.auth.getSession();
+        const { error } = await sbClient.from("spot_suggestions").insert({
+          water_body_id: wb.id,
+          user_id:       s.user.id,
+          type:          currentType,
+          valeur,
+        });
+
+        if (error) {
+          msgEl.textContent = "Erreur : " + error.message;
+          msgEl.className = "enrich-msg enrich-error";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Soumettre la suggestion";
+        } else {
+          msgEl.textContent = "Suggestion envoyée, merci !";
+          msgEl.className = "enrich-msg enrich-success";
+          submitBtn.textContent = "Envoyé ✓";
+        }
       });
     }
 
