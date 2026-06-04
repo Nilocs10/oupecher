@@ -285,7 +285,29 @@ header .tagline {
   padding: 0.25rem 0.65rem;
   font-size: 0.78rem;
   color: var(--color-text);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
 }
+
+/* ── Bouton × admin inline ── */
+.admin-inline-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: #f87171;
+  font-size: 0.85rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.tag:hover .admin-inline-delete,
+.permit-item:hover .admin-inline-delete { opacity: 1; }
+.admin-inline-delete:hover { color: #ef4444; }
 
 .tag.fish {
   border-color: var(--color-primary);

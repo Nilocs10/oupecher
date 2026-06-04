@@ -241,6 +241,67 @@
 
       initSpotEnrichSection(wb);
       initSpotAdminDeleteBtn(wb);
+      initSpotAdminInlineBtns(wb);
+    }
+
+    async function initSpotAdminInlineBtns(wb) {
+      if (typeof sbClient === "undefined") return;
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (!session || session.user.email !== ADMIN_EMAIL) return;
+
+      function makeDeleteBtn(label, onConfirm) {
+        const btn = document.createElement("button");
+        btn.className = "admin-inline-delete";
+        btn.title = `Supprimer ${label}`;
+        btn.textContent = "×";
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          if (!confirm(`Supprimer "${label}" de ce spot ?`)) return;
+          btn.disabled = true;
+          const error = await onConfirm();
+          if (error) { alert("Erreur : " + error.message); btn.disabled = false; return; }
+          location.reload();
+        });
+        return btn;
+      }
+
+      // ── Espèces ──────────────────────────────────────────────────────────────
+      document.getElementById("spot-fish")?.querySelectorAll(".tag.fish").forEach(tag => {
+        const name = tag.textContent.trim();
+        tag.appendChild(makeDeleteBtn(name, async () => {
+          const { data: rows } = await sbClient.from("fish").select("id").eq("name", name).limit(1);
+          if (!rows?.length) return { message: `Espèce "${name}" introuvable.` };
+          const { error } = await sbClient.from("water_body_fish")
+            .delete().eq("water_body_id", wb.id).eq("fish_id", rows[0].id);
+          return error;
+        }));
+      });
+
+      // ── Permis ───────────────────────────────────────────────────────────────
+      (wb.permits || []).forEach(p => {
+        document.getElementById("spot-permits")
+          ?.querySelectorAll(".permit-item.permit-compact")
+          .forEach(item => {
+            const badge = item.querySelector(".permit-badge");
+            if (badge && badge.textContent.trim() === `⚠ ${p.name}`) {
+              item.appendChild(makeDeleteBtn(p.name, async () => {
+                const { error } = await sbClient.from("water_body_permits")
+                  .delete().eq("water_body_id", wb.id).eq("permit_id", p.id);
+                return error;
+              }));
+            }
+          });
+      });
+
+      // ── Techniques ───────────────────────────────────────────────────────────
+      document.getElementById("spot-techniques")?.querySelectorAll(".tag.technique").forEach(tag => {
+        const technique = tag.textContent.trim();
+        tag.appendChild(makeDeleteBtn(technique, async () => {
+          const { error } = await sbClient.from("water_body_techniques")
+            .delete().eq("water_body_id", wb.id).eq("technique", technique);
+          return error;
+        }));
+      });
     }
 
     async function initSpotAdminDeleteBtn(wb) {
