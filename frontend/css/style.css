@@ -986,6 +986,10 @@ header .tagline {
   font-weight: 700;
   cursor: pointer;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
   transition: background 0.15s;
   white-space: nowrap;
   pointer-events: all;
@@ -994,6 +998,18 @@ header .tagline {
 #propose-btn.active {
   background: #fb923c;
   animation: pulse-propose 1.4s ease-in-out infinite;
+}
+
+#propose-btn-hint {
+  display: none;
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-top: 0.15rem;
+}
+@media (max-width: 767px) {
+  #propose-btn { flex-direction: column; align-items: center; }
+  #propose-btn.active #propose-btn-hint { display: block; }
 }
 @keyframes pulse-propose {
   0%, 100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.45); }

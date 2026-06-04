@@ -97,7 +97,8 @@
 
     <!-- Bouton flottant -->
     <button id="propose-btn" title="Activez puis cliquez sur la carte pour proposer un spot">
-      + Proposer un spot
+      <span id="propose-btn-label">+ Proposer un spot</span>
+      <span id="propose-btn-hint">Appuyez sur la carte à l'endroit souhaité</span>
     </button>
 
     <aside id="panel" class="hidden">
@@ -388,10 +389,13 @@
     const proposeSubmit   = document.getElementById("propose-submit");
     const mapEl           = document.getElementById("map");
 
+    const proposeBtnLabel = document.getElementById("propose-btn-label");
+
     proposeBtn.addEventListener("click", () => {
       proposeMode = !proposeMode;
       proposeBtn.classList.toggle("active", proposeMode);
       mapEl.classList.toggle("propose-active", proposeMode);
+      proposeBtnLabel.textContent = proposeMode ? "+ Proposer un spot ici" : "+ Proposer un spot";
     });
 
     // Appelé depuis map.js quand proposeMode est actif et que l'utilisateur clique sur la carte
@@ -403,6 +407,7 @@
       proposeMode = false;
       proposeBtn.classList.remove("active");
       mapEl.classList.remove("propose-active");
+      proposeBtnLabel.textContent = "+ Proposer un spot";
       loadProposeFormFish();
       document.getElementById("propose-name").focus();
     }
