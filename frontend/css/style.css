@@ -306,8 +306,30 @@ header .tagline {
   flex-shrink: 0;
 }
 .tag:hover .admin-inline-delete,
-.permit-item:hover .admin-inline-delete { opacity: 1; }
+.permit-item:hover .admin-inline-delete,
+.comment-item:hover .admin-inline-delete,
+.photo-thumb:hover .admin-inline-delete { opacity: 1; }
 .admin-inline-delete:hover { color: #ef4444; }
+
+/* Positionnement absolu pour commentaires */
+.comment-item { position: relative; }
+.comment-item .admin-inline-delete {
+  position: absolute;
+  top: 0.35rem; right: 0;
+  font-size: 1rem;
+}
+
+/* Positionnement overlay pour photos */
+.photo-thumb .admin-inline-delete {
+  position: absolute;
+  top: 0.3rem; right: 0.3rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  width: 1.35rem; height: 1.35rem;
+  display: flex !important;
+  align-items: center; justify-content: center;
+  font-size: 0.78rem;
+}
 
 .tag.fish {
   border-color: var(--color-primary);

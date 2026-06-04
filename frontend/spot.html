@@ -225,15 +225,12 @@
       // Notes, photos, commentaires
       if (typeof loadRatings !== "undefined") loadRatings(wb.id);
 
-      if (typeof loadPhotos !== "undefined") {
-        loadPhotos(
-          wb.id,
-          document.getElementById("spot-photos-grid"),
-          document.getElementById("spot-photos-upload")
-        );
-      }
+      const _photosP = (typeof loadPhotos !== "undefined")
+        ? loadPhotos(wb.id, document.getElementById("spot-photos-grid"), document.getElementById("spot-photos-upload"))
+        : Promise.resolve();
 
-      loadSpotComments(wb.id);
+      const _commentsP = loadSpotComments(wb.id);
+
       document.getElementById("spot-comment-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         await submitSpotComment(wb.id);
@@ -241,7 +238,9 @@
 
       initSpotEnrichSection(wb);
       initSpotAdminDeleteBtn(wb);
-      initSpotAdminInlineBtns(wb);
+
+      // Admin inline × : attendre que photos et commentaires soient rendus
+      Promise.all([_photosP, _commentsP]).then(() => initSpotAdminInlineBtns(wb));
     }
 
     async function initSpotAdminInlineBtns(wb) {
@@ -256,6 +255,7 @@
         btn.textContent = "×";
         btn.addEventListener("click", async (e) => {
           e.stopPropagation();
+          e.preventDefault();
           if (!confirm(`Supprimer "${label}" de ce spot ?`)) return;
           btn.disabled = true;
           const error = await onConfirm();
@@ -299,6 +299,25 @@
         tag.appendChild(makeDeleteBtn(technique, async () => {
           const { error } = await sbClient.from("water_body_techniques")
             .delete().eq("water_body_id", wb.id).eq("technique", technique);
+          return error;
+        }));
+      });
+
+      // ── Commentaires ─────────────────────────────────────────────────────────
+      document.getElementById("spot-comments-list")?.querySelectorAll(".comment-item[data-id]").forEach(item => {
+        const id      = item.dataset.id;
+        const preview = item.querySelector(".comment-content")?.textContent?.slice(0, 40) || "ce commentaire";
+        item.appendChild(makeDeleteBtn(preview, async () => {
+          const { error } = await sbClient.from("comments").delete().eq("id", id);
+          return error;
+        }));
+      });
+
+      // ── Photos ───────────────────────────────────────────────────────────────
+      document.getElementById("spot-photos-grid")?.querySelectorAll(".photo-thumb[data-id]").forEach(item => {
+        const id = item.dataset.id;
+        item.appendChild(makeDeleteBtn("cette photo", async () => {
+          const { error } = await sbClient.from("photos").delete().eq("id", id);
           return error;
         }));
       });
@@ -532,7 +551,7 @@
           return;
         }
         list.innerHTML = comments.map(c => `
-          <div class="comment-item">
+          <div class="comment-item" data-id="${c.id}">
             <div class="comment-meta">
               <span class="comment-author">${esc(c.author_name)}</span>
               <span class="comment-date">${fmtDate(c.created_at)}</span>

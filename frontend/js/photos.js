@@ -48,7 +48,7 @@ function renderPhotoGrid(photos, gridEl) {
     return;
   }
   gridEl.innerHTML = photos.map(p => `
-    <a class="photo-thumb" href="${_e(p.url)}" target="_blank" rel="noopener noreferrer"
+    <a class="photo-thumb" data-id="${p.id}" href="${_e(p.url)}" target="_blank" rel="noopener noreferrer"
        title="${p.caption ? _e(p.caption) : "Agrandir"}">
       <img src="${_e(p.url)}" alt="${p.caption ? _e(p.caption) : "Photo"}" loading="lazy">
       ${p.caption ? `<span class="photo-caption">${_e(p.caption)}</span>` : ""}
