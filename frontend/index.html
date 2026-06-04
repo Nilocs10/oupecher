@@ -562,6 +562,13 @@
           applyFilters();
         }
         renderMobileMenu(session);
+
+        // Marqueurs pending visibles uniquement pour l'admin
+        if (session?.user?.email === ADMIN_EMAIL) {
+          loadPendingSpots();
+        } else {
+          clearPendingMarkers();
+        }
       });
     }
 

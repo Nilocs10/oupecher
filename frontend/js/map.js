@@ -6,7 +6,8 @@ const TYPE_COLORS = {
 };
 
 let map;
-let markers = [];
+let markers        = [];
+let pendingMarkers = [];
 
 function initMap() {
   map = L.map("map").setView([50.5, 4.5], 7);
@@ -56,6 +57,74 @@ function addSpotMarker(wb) {
 
   markers.push(marker);
   return marker;
+}
+
+function addPendingSpotMarker(wb) {
+  const icon = L.divIcon({
+    className:   "",
+    html:        `<div class="pending-marker">?</div>`,
+    iconSize:    [22, 22],
+    iconAnchor:  [11, 11],
+  });
+
+  const marker = L.marker([wb.latitude, wb.longitude], { icon }).addTo(map);
+  marker._wbId = wb.id;
+
+  marker.bindTooltip(`⏳ ${wb.name}`, {
+    direction: "top",
+    offset:    [0, -12],
+    className: "dark-tooltip",
+  });
+
+  marker.on("click", (e) => {
+    L.DomEvent.stopPropagation(e);
+    if (typeof openPendingSpotPanel !== "undefined") openPendingSpotPanel(wb);
+  });
+
+  pendingMarkers.push(marker);
+  return marker;
+}
+
+function removePendingMarker(id) {
+  const idx = pendingMarkers.findIndex(m => m._wbId === id);
+  if (idx !== -1) {
+    pendingMarkers[idx].remove();
+    pendingMarkers.splice(idx, 1);
+  }
+}
+
+function clearPendingMarkers() {
+  pendingMarkers.forEach(m => m.remove());
+  pendingMarkers = [];
+}
+
+async function loadPendingSpots() {
+  clearPendingMarkers();
+  if (typeof sbClient === "undefined") return;
+
+  const { data: spots, error } = await sbClient
+    .from("water_bodies")
+    .select("*")
+    .eq("status", "pending");
+
+  if (error || !spots?.length) return;
+
+  // Espèces (requête séparée pour éviter les problèmes de FK)
+  const ids = spots.map(s => s.id);
+  let fishMap = {};
+  const { data: fishLinks } = await sbClient
+    .from("water_body_fish")
+    .select("water_body_id, fish(name)")
+    .in("water_body_id", ids);
+  for (const row of (fishLinks || [])) {
+    if (!fishMap[row.water_body_id]) fishMap[row.water_body_id] = [];
+    if (row.fish?.name) fishMap[row.water_body_id].push(row.fish.name);
+  }
+
+  for (const spot of spots) {
+    spot._fish = fishMap[spot.id] || [];
+    addPendingSpotMarker(spot);
+  }
 }
 
 function updateApiStatus() {

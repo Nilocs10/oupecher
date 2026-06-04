@@ -405,6 +405,87 @@ function fmtDate(iso) {
   });
 }
 
+function openPendingSpotPanel(wb) {
+  panel.classList.remove("hidden");
+  panelTitle.textContent = wb.name;
+
+  const typeLabel = { river: "Rivière", lake: "Lac", pond: "Étang", canal: "Canal" };
+  panelSubtitle.textContent =
+    `${typeLabel[wb.type] ?? wb.type} · ${wb.country === "BE" ? "Belgique" : "France"}` +
+    `${wb.region ? " – " + wb.region : ""}`;
+
+  const fish = wb._fish || [];
+  const fishHTML = fish.length
+    ? fish.map(f => `<span class="tag fish">${esc(f)}</span>`).join("")
+    : "<em>Aucune espèce renseignée</em>";
+
+  panelBody.innerHTML = `
+    <div class="panel-section">
+      <div class="pending-status-badge">⏳ En attente de validation</div>
+    </div>
+    <div class="panel-section">
+      <h3>Espèces présentes</h3>
+      <div class="tags">${fishHTML}</div>
+    </div>
+    <div class="panel-section">
+      <h3>Coordonnées</h3>
+      <span class="pending-coords">${wb.latitude.toFixed(5)}, ${wb.longitude.toFixed(5)}</span>
+    </div>
+    <div class="panel-section admin-delete-section">
+      <div class="pending-actions">
+        <button id="btn-pending-approve" class="btn-pending-approve">✓ Approuver</button>
+        <button id="btn-pending-reject"  class="btn-pending-reject">✕ Rejeter</button>
+      </div>
+      <div id="pending-action-msg" class="enrich-msg"></div>
+    </div>
+  `;
+
+  document.getElementById("btn-pending-approve").addEventListener("click", () => approvePendingFromMap(wb.id));
+  document.getElementById("btn-pending-reject").addEventListener("click",  () => rejectPendingFromMap(wb.id));
+}
+
+async function approvePendingFromMap(id) {
+  const approveBtn = document.getElementById("btn-pending-approve");
+  const rejectBtn  = document.getElementById("btn-pending-reject");
+  const msgEl      = document.getElementById("pending-action-msg");
+  approveBtn.disabled = rejectBtn.disabled = true;
+  approveBtn.textContent = "Approbation…";
+
+  const { error } = await sbClient.from("water_bodies").update({ status: "approved" }).eq("id", id);
+  if (error) {
+    msgEl.textContent = "Erreur : " + error.message;
+    msgEl.className = "enrich-msg enrich-error";
+    approveBtn.disabled = rejectBtn.disabled = false;
+    approveBtn.textContent = "✓ Approuver";
+    return;
+  }
+
+  if (typeof removePendingMarker !== "undefined") removePendingMarker(id);
+  closePanel();
+  if (typeof applyFilters !== "undefined") applyFilters();
+}
+
+async function rejectPendingFromMap(id) {
+  if (!confirm("Supprimer définitivement ce spot ?")) return;
+  const approveBtn = document.getElementById("btn-pending-approve");
+  const rejectBtn  = document.getElementById("btn-pending-reject");
+  const msgEl      = document.getElementById("pending-action-msg");
+  approveBtn.disabled = rejectBtn.disabled = true;
+  rejectBtn.textContent = "Suppression…";
+
+  const { error } = await sbClient.from("water_bodies").delete().eq("id", id);
+  if (error) {
+    msgEl.textContent = "Erreur : " + error.message;
+    msgEl.className = "enrich-msg enrich-error";
+    approveBtn.disabled = rejectBtn.disabled = false;
+    rejectBtn.textContent = "✕ Rejeter";
+    return;
+  }
+
+  if (typeof removePendingMarker !== "undefined") removePendingMarker(id);
+  closePanel();
+}
+
 async function initAdminDeleteBtn(wb) {
   const el = document.getElementById("admin-delete-section");
   if (!el || typeof sbClient === "undefined") return;
