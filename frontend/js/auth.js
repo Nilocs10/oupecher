@@ -5,6 +5,8 @@ const _SB_ANON = "sb_publishable_J_Kn3EKBR5i1ZiPr1Acxzg_ri27kj1F";
 
 const sbClient = window.supabase.createClient(_SB_URL, _SB_ANON);
 
+const ADMIN_EMAIL = "nicolas.gomes10@hotmail.com";
+
 // ── Mise à jour du bloc d'auth dans le header ──────────────────────────────
 function renderAuthNav(navEl, session) {
   if (!navEl) return;
@@ -15,8 +17,11 @@ function renderAuthNav(navEl, session) {
     const favLink = (typeof HIDE_FAV_LINK === "undefined")
       ? `<a href="favoris.html" class="header-link">&#x2665; Mes favoris</a><span class="nav-sep" aria-hidden="true">|</span>`
       : "";
+    const adminLink = session.user.email === ADMIN_EMAIL
+      ? `<a href="admin.html" class="header-link" style="color:var(--color-primary,#22d3b8);font-size:0.78rem">Admin</a><span class="nav-sep" aria-hidden="true">|</span>`
+      : "";
     navEl.innerHTML = `
-      ${favLink}<span class="auth-name">${_esc(name)}</span>
+      ${favLink}${adminLink}<span class="auth-name">${_esc(name)}</span>
       <span class="nav-sep" aria-hidden="true">|</span>
       <button class="auth-btn-logout" id="btn-logout">Déconnexion</button>
     `;

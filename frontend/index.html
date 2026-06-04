@@ -447,19 +447,31 @@
       proposeSubmit.disabled = true;
 
       try {
-        await createWaterBody({
+        const newSpot = await createWaterBody({
           name, type, country,
           latitude:  parseFloat(proposeLatInput.value),
           longitude: parseFloat(proposeLngInput.value),
           fish_ids, free_fish_names, permit_ids, techniques,
           private_society_name,
         });
-        // Le spot est "pending" : il n'apparaît pas sur la carte avant validation
+
+        // Si l'utilisateur est admin, approuver immédiatement le spot
+        let autoApproved = false;
+        const { data: { session: curSession } } = await sbClient.auth.getSession();
+        if (curSession?.user?.email === ADMIN_EMAIL && newSpot?.id) {
+          await sbClient.from("water_bodies").update({ status: "approved" }).eq("id", newSpot.id);
+          autoApproved = true;
+        }
+
         proposeOverlay.classList.add("hidden");
         proposeForm.reset();
         document.getElementById("fish-autre-text").classList.add("hidden");
         document.getElementById("private-society-name").classList.add("hidden");
-        showToast("Spot soumis avec succès ! Il apparaîtra sur la carte après validation.");
+        const msg = autoApproved
+          ? "Spot ajouté et approuvé directement sur la carte !"
+          : "Spot soumis avec succès ! Il apparaîtra sur la carte après validation.";
+        showToast(msg);
+        if (autoApproved) applyFilters();
       } catch {
         proposeError.textContent = "Erreur lors de l'envoi — vérifiez que l'API est accessible.";
         proposeError.classList.remove("hidden");
@@ -507,9 +519,12 @@
       const favSec  = document.getElementById("mobile-fav-section");
       const authSec = document.getElementById("mobile-auth-section");
       if (session) {
-        const name = session.user.user_metadata?.username || session.user.email.split("@")[0];
+        const name     = session.user.user_metadata?.username || session.user.email.split("@")[0];
+        const isAdmin  = session.user.email === ADMIN_EMAIL;
+        const adminRow = isAdmin ? `<a href="admin.html" class="mobile-menu-link" style="color:var(--color-primary-light);font-size:0.85rem">Admin</a>` : "";
         if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
         if (authSec) authSec.innerHTML = `
+          ${adminRow}
           <button class="mobile-menu-link mobile-menu-logout" id="_mob-out">Déconnexion</button>
           <span class="mobile-menu-user">${_mi(name)}</span>`;
         document.getElementById("_mob-out")?.addEventListener("click", () => sbClient.auth.signOut());

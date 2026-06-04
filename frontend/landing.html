@@ -803,10 +803,14 @@
       const favSec  = document.getElementById("mobile-fav-section");
       const authSec = document.getElementById("mobile-auth-section");
       if (session) {
-        const name = session.user.user_metadata?.username
-                   || session.user.email.split("@")[0];
+        const name    = session.user.user_metadata?.username
+                      || session.user.email.split("@")[0];
+        const adminRow = session.user.email === "nicolas.gomes10@hotmail.com"
+          ? `<a href="admin.html" class="mobile-menu-link" style="color:var(--blue-light);font-size:0.85rem">Admin</a>`
+          : "";
         if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
         if (authSec) authSec.innerHTML = `
+          ${adminRow}
           <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>
           <span class="mobile-menu-user">${_mesc(name)}</span>`;
         document.getElementById("mob-logout")?.addEventListener("click", async () => {

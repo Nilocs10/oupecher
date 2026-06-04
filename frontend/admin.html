@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – OùPêcher</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #050e14;
+      --surface:    #0a1929;
+      --surface-2:  #0f2436;
+      --border:     #1a3a50;
+      --blue:       #2e8fa8;
+      --blue-light: #4db8d4;
+      --blue-glow:  rgba(46, 143, 168, 0.18);
+      --text:       #e0eff5;
+      --muted:      #6b9aaa;
+      --radius:     10px;
+      --green:      #22c55e;
+      --red:        #f87171;
+      --amber:      #fbbf24;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(5, 14, 20, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav {
+      max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo { font-family: 'Lora', serif; font-size: 1.25rem; color: var(--blue-light); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .header-link { font-size: 0.88rem; color: var(--muted); padding: 0.4rem 0.6rem; border-radius: 6px; transition: color 0.15s, background 0.15s; }
+    .header-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .btn-cta { background: var(--blue); color: #fff; border-radius: 8px; padding: 0.45rem 1.1rem; font-size: 0.88rem; font-weight: 600; transition: background 0.15s; }
+    .btn-cta:hover { background: var(--blue-light); }
+    #auth-nav { display: flex; align-items: center; gap: 0.5rem; }
+    .auth-name { font-size: 0.82rem; color: var(--muted); }
+    .auth-btn-logout { font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; transition: color 0.15s; }
+    .auth-btn-logout:hover { color: #fca5a5; }
+    .nav-sep { color: var(--muted); opacity: 0.4; font-weight: 300; user-select: none; pointer-events: none; }
+
+    /* ── Main ── */
+    main { flex: 1; max-width: 860px; margin: 0 auto; width: 100%; padding: 2.5rem 1.5rem 4rem; }
+
+    .page-title { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--blue-light); margin-bottom: 0.4rem; }
+    .page-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+    #access-denied { display: none; text-align: center; padding: 4rem 1rem; color: var(--muted); }
+    #access-denied h2 { font-family: 'Lora', serif; color: var(--red); margin-bottom: 0.5rem; }
+
+    /* ── Spot cards ── */
+    .empty-msg { color: var(--muted); font-size: 0.95rem; padding: 2rem 0; }
+
+    .spot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1rem;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .spot-card.card-removed { opacity: 0; transform: translateY(-6px); }
+
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .card-title { font-size: 1.05rem; font-weight: 600; color: var(--text); }
+    .card-badge {
+      flex-shrink: 0;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      background: var(--blue-glow); color: var(--blue-light);
+      border: 1px solid var(--blue); border-radius: 20px;
+      padding: 0.2rem 0.65rem;
+    }
+
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.65rem; }
+    .card-meta .coord { font-family: monospace; font-size: 0.78rem; }
+
+    .card-fish { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
+    .fish-tag {
+      font-size: 0.76rem; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 0.15rem 0.55rem; color: var(--muted);
+    }
+
+    .card-society { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.65rem; }
+    .card-society strong { color: var(--text); }
+
+    /* ── Proximity warning ── */
+    .similar-warning {
+      background: rgba(251, 191, 36, 0.07);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      font-size: 0.84rem;
+      color: var(--amber);
+      margin-bottom: 0.75rem;
+      display: flex; flex-direction: column; gap: 0.45rem;
+    }
+    .similar-warning-title { font-weight: 600; }
+    .similar-item { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .similar-name { color: var(--text); font-weight: 500; }
+    .btn-merge {
+      font-size: 0.78rem; font-weight: 600;
+      background: rgba(251, 191, 36, 0.12); color: var(--amber);
+      border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px;
+      padding: 0.25rem 0.7rem; cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-merge:hover { background: rgba(251, 191, 36, 0.22); }
+    .btn-merge:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Action buttons ── */
+    .card-actions { display: flex; gap: 0.65rem; margin-top: 0.85rem; }
+    .btn-approve, .btn-reject {
+      font-size: 0.85rem; font-weight: 600;
+      border: none; border-radius: 8px;
+      padding: 0.5rem 1.1rem; cursor: pointer;
+      font-family: inherit; transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-approve { background: rgba(34, 197, 94, 0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .btn-approve:hover { background: rgba(34, 197, 94, 0.25); }
+    .btn-reject  { background: rgba(248, 113, 113, 0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+    .btn-reject:hover  { background: rgba(248, 113, 113, 0.22); }
+    .btn-approve:disabled, .btn-reject:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .card-feedback { font-size: 0.8rem; margin-top: 0.4rem; min-height: 1.2em; }
+    .card-feedback.error { color: var(--red); }
+    .card-feedback.success { color: var(--green); }
+
+    @media (max-width: 600px) {
+      main { padding: 1.5rem 1rem 3rem; }
+      .card-actions { flex-direction: column; }
+      .btn-approve, .btn-reject { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="landing.html" class="logo">OùPêcher</a>
+      <div class="nav-right">
+        <a href="index.html" class="header-link">Carte</a>
+        <div id="auth-nav"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div id="access-denied">
+      <h2>Accès refusé</h2>
+      <p>Cette page est réservée à l'administrateur.</p>
+    </div>
+
+    <div id="admin-content" style="display:none">
+      <h1 class="page-title">Modération des spots</h1>
+      <p class="page-sub" id="pending-count">Chargement…</p>
+      <div id="pending-list"></div>
+    </div>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+  const ADMIN_EMAIL = 'nicolas.gomes10@hotmail.com';
+
+  // ── Utilitaires ────────────────────────────────────────────────────────────
+  function _esc(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    const R   = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2
+            + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+    return R * 2 * Math.asin(Math.sqrt(a));
+  }
+
+  // ── Chargement principal ───────────────────────────────────────────────────
+  async function loadAdmin() {
+    const { data: { session } } = await sbClient.auth.getSession();
+
+    if (!session || session.user.email !== ADMIN_EMAIL) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('admin-content').style.display = 'block';
+
+    // Spots en attente (avec leurs espèces)
+    const { data: pending, error: errP } = await sbClient
+      .from('water_bodies')
+      .select('*, water_body_fish(fish_id, fish(name))')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (errP) {
+      document.getElementById('pending-list').innerHTML =
+        `<p class="empty-msg" style="color:var(--red)">Erreur de chargement : ${_esc(errP.message)}</p>`;
+      return;
+    }
+
+    // Spots approuvés pour la détection de proximité
+    const { data: approved } = await sbClient
+      .from('water_bodies')
+      .select('id, name, latitude, longitude')
+      .or('status.is.null,status.eq.approved');
+
+    renderPending(pending || [], approved || []);
+  }
+
+  // ── Rendu ──────────────────────────────────────────────────────────────────
+  function renderPending(pending, approved) {
+    const countEl = document.getElementById('pending-count');
+    const listEl  = document.getElementById('pending-list');
+
+    if (!pending.length) {
+      countEl.textContent = 'Aucun spot en attente.';
+      listEl.innerHTML = '<p class="empty-msg">Tout est à jour — aucun spot à modérer.</p>';
+      return;
+    }
+
+    countEl.textContent = `${pending.length} spot(s) en attente de validation`;
+    listEl.innerHTML = '';
+
+    for (const spot of pending) {
+      const fish   = (spot.water_body_fish || []).map(r => r.fish?.name).filter(Boolean);
+      const nearby = (approved || []).filter(a =>
+        a.id !== spot.id && haversineKm(spot.latitude, spot.longitude, a.latitude, a.longitude) < 0.2
+      );
+
+      // Avertissement de proximité
+      let nearbyHTML = '';
+      if (nearby.length) {
+        const items = nearby.map(n => `
+          <div class="similar-item">
+            <span>Spot similaire existant :</span>
+            <span class="similar-name">${_esc(n.name)}</span>
+            <button class="btn-merge"
+              data-pending="${spot.id}"
+              data-approved="${n.id}"
+              data-aname="${_esc(n.name)}">
+              Fusionner les espèces
+            </button>
+          </div>`).join('');
+        nearbyHTML = `<div class="similar-warning"><div class="similar-warning-title">⚠ Doublon possible (< 200 m)</div>${items}</div>`;
+      }
+
+      const fishHTML = fish.length
+        ? `<div class="card-fish">${fish.map(f => `<span class="fish-tag">${_esc(f)}</span>`).join('')}</div>`
+        : '';
+
+      const societyHTML = spot.private_society_name != null
+        ? `<div class="card-society">Société privée : <strong>${_esc(spot.private_society_name || 'non renseignée')}</strong></div>`
+        : '';
+
+      const card = document.createElement('div');
+      card.className = 'spot-card';
+      card.id = `card-${spot.id}`;
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">${_esc(spot.name)}</div>
+          <span class="card-badge">${_esc(spot.type)}</span>
+        </div>
+        <div class="card-meta">
+          <span>${_esc(spot.region || '—')}</span>
+          <span>${_esc(spot.country)}</span>
+          <span class="coord">${spot.latitude.toFixed(5)}, ${spot.longitude.toFixed(5)}</span>
+        </div>
+        ${fishHTML}
+        ${societyHTML}
+        ${nearbyHTML}
+        <div class="card-actions">
+          <button class="btn-approve" data-id="${spot.id}">✓ Approuver</button>
+          <button class="btn-reject"  data-id="${spot.id}">✕ Rejeter</button>
+        </div>
+        <div class="card-feedback" id="fb-${spot.id}"></div>
+      `;
+      listEl.appendChild(card);
+    }
+
+    listEl.addEventListener('click', onAction);
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+  async function onAction(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.classList.contains('btn-approve')) await approveSpot(+btn.dataset.id);
+    else if (btn.classList.contains('btn-reject'))  await rejectSpot(+btn.dataset.id);
+    else if (btn.classList.contains('btn-merge'))   await mergeSpots(+btn.dataset.pending, +btn.dataset.approved, btn.dataset.aname);
+  }
+
+  async function approveSpot(id) {
+    setBusy(id, true);
+    const { error } = await sbClient.from('water_bodies').update({ status: 'approved' }).eq('id', id);
+    if (error) { feedback(id, 'Erreur : ' + error.message, 'error'); setBusy(id, false); return; }
+    removeCard(id);
+  }
+
+  async function rejectSpot(id) {
+    if (!confirm('Supprimer définitivement ce spot ?')) return;
+    setBusy(id, true);
+    const { error } = await sbClient.from('water_bodies').delete().eq('id', id);
+    if (error) { feedback(id, 'Erreur : ' + error.message, 'error'); setBusy(id, false); return; }
+    removeCard(id);
+  }
+
+  async function mergeSpots(pendingId, approvedId, approvedName) {
+    if (!confirm(`Fusionner les espèces de ce spot dans "${approvedName}" puis le supprimer ?`)) return;
+    setBusy(pendingId, true);
+
+    // Espèces du spot en attente
+    const { data: pendingFish }  = await sbClient.from('water_body_fish').select('fish_id').eq('water_body_id', pendingId);
+    // Espèces déjà présentes dans le spot approuvé
+    const { data: approvedFish } = await sbClient.from('water_body_fish').select('fish_id').eq('water_body_id', approvedId);
+
+    const existing = new Set((approvedFish || []).map(r => r.fish_id));
+    const toAdd    = (pendingFish || []).filter(r => !existing.has(r.fish_id));
+
+    if (toAdd.length) {
+      const { error: errIns } = await sbClient.from('water_body_fish').insert(
+        toAdd.map(r => ({ water_body_id: approvedId, fish_id: r.fish_id }))
+      );
+      if (errIns) { feedback(pendingId, 'Erreur fusion : ' + errIns.message, 'error'); setBusy(pendingId, false); return; }
+    }
+
+    // Supprimer le spot pending (CASCADE nettoie water_body_fish)
+    const { error: errDel } = await sbClient.from('water_bodies').delete().eq('id', pendingId);
+    if (errDel) { feedback(pendingId, 'Erreur suppression : ' + errDel.message, 'error'); setBusy(pendingId, false); return; }
+
+    removeCard(pendingId);
+  }
+
+  // ── Helpers UI ────────────────────────────────────────────────────────────
+  function setBusy(id, busy) {
+    document.getElementById(`card-${id}`)
+      ?.querySelectorAll('button')
+      .forEach(b => b.disabled = busy);
+  }
+
+  function feedback(id, msg, type) {
+    const el = document.getElementById(`fb-${id}`);
+    if (el) { el.textContent = msg; el.className = `card-feedback ${type}`; }
+  }
+
+  function removeCard(id) {
+    const card = document.getElementById(`card-${id}`);
+    if (!card) return;
+    card.classList.add('card-removed');
+    setTimeout(() => {
+      card.remove();
+      const remaining = document.querySelectorAll('.spot-card').length;
+      const countEl   = document.getElementById('pending-count');
+      if (countEl) countEl.textContent = `${remaining} spot(s) en attente de validation`;
+      if (!remaining) {
+        document.getElementById('pending-list').innerHTML = '<p class="empty-msg">Tout est à jour — aucun spot à modérer.</p>';
+        if (countEl) countEl.textContent = 'Aucun spot en attente.';
+      }
+    }, 350);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadAdmin);
+  </script>
+
+</body>
+</html>
