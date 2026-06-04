@@ -79,6 +79,8 @@
             <div class="nav-btns" id="spot-nav"></div>
           </div>
 
+          <div id="spot-admin-delete-section"></div>
+
           <div class="spot-section">
             <h3>Commentaires</h3>
             <div id="spot-comments-list"></div>
@@ -239,6 +241,40 @@
       });
 
       initSpotEnrichSection(wb);
+      initSpotAdminDeleteBtn(wb);
+    }
+
+    async function initSpotAdminDeleteBtn(wb) {
+      const el = document.getElementById("spot-admin-delete-section");
+      if (!el || typeof sbClient === "undefined") return;
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (!session || session.user.email !== ADMIN_EMAIL) return;
+
+      el.innerHTML = `
+        <div class="spot-section admin-delete-section">
+          <button class="btn-admin-delete" id="spot-admin-delete-btn">🗑 Supprimer ce spot</button>
+          <div id="spot-admin-delete-msg" class="enrich-msg"></div>
+        </div>
+      `;
+
+      document.getElementById("spot-admin-delete-btn").addEventListener("click", async () => {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer ce spot ?")) return;
+        const btn   = document.getElementById("spot-admin-delete-btn");
+        const msgEl = document.getElementById("spot-admin-delete-msg");
+        btn.disabled = true;
+        btn.textContent = "Suppression…";
+
+        const { error } = await sbClient.from("water_bodies").delete().eq("id", wb.id);
+        if (error) {
+          msgEl.textContent = "Erreur : " + error.message;
+          msgEl.className = "enrich-msg enrich-error";
+          btn.disabled = false;
+          btn.textContent = "🗑 Supprimer ce spot";
+          return;
+        }
+
+        window.location.href = "index.html";
+      });
     }
 
     async function initSpotEnrichSection(wb) {

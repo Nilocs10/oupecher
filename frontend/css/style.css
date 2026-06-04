@@ -1399,6 +1399,23 @@ header .tagline {
 .enrich-submit:hover:not(:disabled) { background: rgba(34,211,184,0.18); }
 .enrich-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Bouton suppression admin ── */
+.admin-delete-section { padding-top: 0; }
+.btn-admin-delete {
+  display: block; width: 100%;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border-radius: var(--radius);
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+.btn-admin-delete:hover:not(:disabled) { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.5); }
+.btn-admin-delete:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Page fiche spot (spot.html) ── */
 body.spot-page {
   overflow: auto;

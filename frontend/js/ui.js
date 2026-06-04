@@ -120,6 +120,7 @@ function renderPanel(wb) {
 
   // Chargement différé du bouton Enrichir (nécessite auth)
   initEnrichSection(wb);
+  initAdminDeleteBtn(wb);
 }
 
 async function initEnrichSection(wb) {
@@ -278,6 +279,7 @@ function buildInfoHTML(wb) {
       </div>
     </div>
     <div id="enrich-section"></div>
+    <div id="admin-delete-section"></div>
   `;
 }
 
@@ -400,5 +402,39 @@ function esc(str) {
 function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("fr-BE", {
     day: "numeric", month: "short", year: "numeric",
+  });
+}
+
+async function initAdminDeleteBtn(wb) {
+  const el = document.getElementById("admin-delete-section");
+  if (!el || typeof sbClient === "undefined") return;
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session || session.user.email !== ADMIN_EMAIL) return;
+
+  el.innerHTML = `
+    <div class="panel-section admin-delete-section">
+      <button class="btn-admin-delete" id="admin-delete-btn">🗑 Supprimer ce spot</button>
+      <div id="admin-delete-msg" class="enrich-msg"></div>
+    </div>
+  `;
+
+  document.getElementById("admin-delete-btn").addEventListener("click", async () => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce spot ?")) return;
+    const btn   = document.getElementById("admin-delete-btn");
+    const msgEl = document.getElementById("admin-delete-msg");
+    btn.disabled = true;
+    btn.textContent = "Suppression…";
+
+    const { error } = await sbClient.from("water_bodies").delete().eq("id", wb.id);
+    if (error) {
+      msgEl.textContent = "Erreur : " + error.message;
+      msgEl.className = "enrich-msg enrich-error";
+      btn.disabled = false;
+      btn.textContent = "🗑 Supprimer ce spot";
+      return;
+    }
+
+    closePanel();
+    applyFilters();
   });
 }
