@@ -128,16 +128,27 @@ async function initEnrichSection(wb) {
   if (!el || typeof sbClient === "undefined") return;
 
   const { data: { session } } = await sbClient.auth.getSession();
-  if (!session) return;  // bouton invisible si non connecté
+  if (!session) return;
 
-  // Récupérer toutes les espèces disponibles
+  const isAdmin = session.user.email === ADMIN_EMAIL;
+
+  // Espèces manquantes
   let allFish = [];
   try { allFish = await getFishList(); } catch {}
-  const existing = new Set(wb.fish_species || []);
-  const newFish  = allFish.filter(f => !existing.has(f.name));
-  const fishOptions = newFish
+  const existingFish = new Set(wb.fish_species || []);
+  const fishOptions = allFish
+    .filter(f => !existingFish.has(f.name))
     .sort((a, b) => a.name.localeCompare(b.name, "fr"))
     .map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`)
+    .join("");
+
+  // Permis manquants (filtrés par pays du spot)
+  let allPermits = [];
+  try { allPermits = await getPermits(wb.country); } catch {}
+  const existingPermitIds = new Set((wb.permits || []).map(p => p.id));
+  const permitOptions = allPermits
+    .filter(p => !existingPermitIds.has(p.id))
+    .map(p => `<option value="${p.id}">${esc(p.name)}${p.price_eur != null ? ` – ${p.price_eur.toFixed(2).replace(".",",")} €` : ""}</option>`)
     .join("");
 
   el.innerHTML = `
@@ -148,6 +159,7 @@ async function initEnrichSection(wb) {
           <button type="button" class="enrich-type-btn active" data-etype="espece">+ Espèce</button>
           <button type="button" class="enrich-type-btn" data-etype="technique">+ Technique</button>
           <button type="button" class="enrich-type-btn" data-etype="type_eau">Corriger le type</button>
+          <button type="button" class="enrich-type-btn" data-etype="permis">+ Permis</button>
         </div>
         <form id="enrich-form" novalidate>
           <div id="enrich-field-espece" class="enrich-field">
@@ -169,6 +181,12 @@ async function initEnrichSection(wb) {
               <option value="canal">Canal</option>
             </select>
           </div>
+          <div id="enrich-field-permis" class="enrich-field hidden">
+            <select id="enrich-permit-select">
+              <option value="">Choisir un permis manquant…</option>
+              ${permitOptions || '<option disabled>Aucun permis disponible</option>'}
+            </select>
+          </div>
           <div id="enrich-msg" class="enrich-msg"></div>
           <button type="submit" id="enrich-submit" class="enrich-submit">Soumettre la suggestion</button>
         </form>
@@ -178,12 +196,10 @@ async function initEnrichSection(wb) {
 
   let currentType = "espece";
 
-  // Toggle ouverture/fermeture du formulaire
   el.querySelector("#enrich-toggle").addEventListener("click", () => {
     el.querySelector("#enrich-form-wrapper").classList.toggle("hidden");
   });
 
-  // Sélection du type de suggestion
   el.querySelectorAll(".enrich-type-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       currentType = btn.dataset.etype;
@@ -195,16 +211,16 @@ async function initEnrichSection(wb) {
     });
   });
 
-  // Soumission
   el.querySelector("#enrich-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const msgEl    = el.querySelector("#enrich-msg");
+    const msgEl     = el.querySelector("#enrich-msg");
     const submitBtn = el.querySelector("#enrich-submit");
 
     let valeur = "";
-    if (currentType === "espece")    valeur = el.querySelector("#enrich-fish-select").value;
+    if      (currentType === "espece")    valeur = el.querySelector("#enrich-fish-select").value;
     else if (currentType === "technique") valeur = el.querySelector("#enrich-tech-input").value.trim();
     else if (currentType === "type_eau")  valeur = el.querySelector("#enrich-type-select").value;
+    else if (currentType === "permis")    valeur = el.querySelector("#enrich-permit-select").value;
 
     if (!valeur) {
       msgEl.textContent = "Veuillez remplir le champ.";
@@ -217,6 +233,27 @@ async function initEnrichSection(wb) {
     msgEl.textContent = "";
 
     const { data: { session: s } } = await sbClient.auth.getSession();
+
+    // Admin + permis : liaison directe sans validation
+    if (currentType === "permis" && isAdmin) {
+      const { error } = await sbClient.from("water_body_permits").insert({
+        water_body_id: wb.id,
+        permit_id:     parseInt(valeur),
+      });
+      if (error) {
+        msgEl.textContent = "Erreur : " + error.message;
+        msgEl.className = "enrich-msg enrich-error";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Soumettre la suggestion";
+      } else {
+        msgEl.textContent = "Permis lié directement !";
+        msgEl.className = "enrich-msg enrich-success";
+        submitBtn.textContent = "Lié ✓";
+      }
+      return;
+    }
+
+    // Cas général : suggestion soumise pour validation
     const { error } = await sbClient.from("spot_suggestions").insert({
       water_body_id: wb.id,
       user_id:       s.user.id,

@@ -284,13 +284,25 @@
       const { data: { session } } = await sbClient.auth.getSession();
       if (!session) return;
 
+      const isAdmin = session.user.email === ADMIN_EMAIL;
+
+      // Espèces manquantes
       let allFish = [];
       try { allFish = await getFishList(); } catch {}
-      const existing = new Set(wb.fish_species || []);
+      const existingFish = new Set(wb.fish_species || []);
       const fishOptions = allFish
-        .filter(f => !existing.has(f.name))
+        .filter(f => !existingFish.has(f.name))
         .sort((a, b) => a.name.localeCompare(b.name, "fr"))
         .map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`)
+        .join("");
+
+      // Permis manquants filtrés par pays
+      let allPermits = [];
+      try { allPermits = await getPermits(wb.country); } catch {}
+      const existingPermitIds = new Set((wb.permits || []).map(p => p.id));
+      const permitOptions = allPermits
+        .filter(p => !existingPermitIds.has(p.id))
+        .map(p => `<option value="${p.id}">${esc(p.name)}${p.price_eur != null ? ` – ${p.price_eur.toFixed(2).replace(".",",")} €` : ""}</option>`)
         .join("");
 
       el.innerHTML = `
@@ -301,6 +313,7 @@
               <button type="button" class="enrich-type-btn active" data-etype="espece">+ Espèce</button>
               <button type="button" class="enrich-type-btn" data-etype="technique">+ Technique</button>
               <button type="button" class="enrich-type-btn" data-etype="type_eau">Corriger le type</button>
+              <button type="button" class="enrich-type-btn" data-etype="permis">+ Permis</button>
             </div>
             <form id="spot-enrich-form" novalidate>
               <div id="spot-enrich-field-espece" class="enrich-field">
@@ -320,6 +333,12 @@
                   <option value="lake">Lac</option>
                   <option value="pond">Étang</option>
                   <option value="canal">Canal</option>
+                </select>
+              </div>
+              <div id="spot-enrich-field-permis" class="enrich-field hidden">
+                <select id="spot-enrich-permit">
+                  <option value="">Choisir un permis manquant…</option>
+                  ${permitOptions || '<option disabled>Aucun permis disponible</option>'}
                 </select>
               </div>
               <div id="spot-enrich-msg" class="enrich-msg"></div>
@@ -352,9 +371,10 @@
         const submitBtn = el.querySelector("#spot-enrich-submit");
 
         let valeur = "";
-        if (currentType === "espece")    valeur = el.querySelector("#spot-enrich-fish").value;
+        if      (currentType === "espece")    valeur = el.querySelector("#spot-enrich-fish").value;
         else if (currentType === "technique") valeur = el.querySelector("#spot-enrich-tech").value.trim();
         else if (currentType === "type_eau")  valeur = el.querySelector("#spot-enrich-type").value;
+        else if (currentType === "permis")    valeur = el.querySelector("#spot-enrich-permit").value;
 
         if (!valeur) {
           msgEl.textContent = "Veuillez remplir le champ.";
@@ -367,6 +387,26 @@
         msgEl.textContent = "";
 
         const { data: { session: s } } = await sbClient.auth.getSession();
+
+        // Admin + permis : liaison directe
+        if (currentType === "permis" && isAdmin) {
+          const { error } = await sbClient.from("water_body_permits").insert({
+            water_body_id: wb.id,
+            permit_id:     parseInt(valeur),
+          });
+          if (error) {
+            msgEl.textContent = "Erreur : " + error.message;
+            msgEl.className = "enrich-msg enrich-error";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Soumettre la suggestion";
+          } else {
+            msgEl.textContent = "Permis lié directement !";
+            msgEl.className = "enrich-msg enrich-success";
+            submitBtn.textContent = "Lié ✓";
+          }
+          return;
+        }
+
         const { error } = await sbClient.from("spot_suggestions").insert({
           water_body_id: wb.id,
           user_id:       s.user.id,

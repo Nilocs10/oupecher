@@ -116,6 +116,7 @@
     .card-badge.badge-espece   { background: rgba(34,197,94,0.08);  color: var(--green); border-color: rgba(34,197,94,0.3); }
     .card-badge.badge-technique{ background: rgba(45,212,191,0.08); color: var(--teal);  border-color: rgba(45,212,191,0.3); }
     .card-badge.badge-type_eau { background: rgba(251,191,36,0.08); color: var(--amber); border-color: rgba(251,191,36,0.3); }
+    .card-badge.badge-permis   { background: rgba(139,92,246,0.1);  color: #c4b5fd;      border-color: rgba(139,92,246,0.35); }
 
     .card-meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.55rem; }
     .card-meta .coord { font-family: monospace; font-size: 0.76rem; }
@@ -226,9 +227,11 @@
   // ── Constantes ─────────────────────────────────────────────────────────────
   // ADMIN_EMAIL est défini globalement dans auth.js (chargé avant ce script)
 
-  const TYPE_LABELS = { espece: 'Espèce', technique: 'Technique', type_eau: "Type d'eau" };
-  const TYPE_CLASSES = { espece: 'badge-espece', technique: 'badge-technique', type_eau: 'badge-type_eau' };
+  const TYPE_LABELS = { espece: 'Espèce', technique: 'Technique', type_eau: "Type d'eau", permis: 'Permis' };
+  const TYPE_CLASSES = { espece: 'badge-espece', technique: 'badge-technique', type_eau: 'badge-type_eau', permis: 'badge-permis' };
   const WATER_TYPE_LABELS = { river: 'Rivière', lake: 'Lac', pond: 'Étang', canal: 'Canal' };
+
+  let _permitMap = {};  // permit_id → name, chargé une fois
 
   function _esc(s) {
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -364,6 +367,12 @@
 
   // ── SUGGESTIONS ────────────────────────────────────────────────────────────
   async function loadPendingSuggestions() {
+    // Charger la map des permis (id → name) pour affichage des suggestions type='permis'
+    if (!Object.keys(_permitMap).length) {
+      const { data: permits } = await sbClient.from('permits').select('id, name');
+      for (const p of (permits || [])) _permitMap[p.id] = p.name;
+    }
+
     const { data: suggestions, error: errS } = await sbClient
       .from('spot_suggestions')
       .select('*')
@@ -408,9 +417,9 @@
       const wbName    = wbNames[s.water_body_id] || `Spot #${s.water_body_id}`;
       const typeLabel = TYPE_LABELS[s.type] || s.type;
       const typeClass = TYPE_CLASSES[s.type] || '';
-      const valLabel  = s.type === 'type_eau'
-        ? (WATER_TYPE_LABELS[s.valeur] ?? s.valeur)
-        : s.valeur;
+      const valLabel  = s.type === 'type_eau' ? (WATER_TYPE_LABELS[s.valeur] ?? s.valeur)
+                      : s.type === 'permis'   ? (_permitMap[s.valeur] ?? `Permis #${s.valeur}`)
+                      : s.valeur;
 
       const card = document.createElement('div');
       card.className = 'spot-card';
@@ -518,6 +527,15 @@
     } else if (type === 'technique') {
       const { error } = await sbClient.from('water_body_techniques').insert({ water_body_id: wbId, technique: valeur });
       applyError = error;
+    } else if (type === 'permis') {
+      const permitId = parseInt(valeur);
+      if (isNaN(permitId)) { feedback(`sug-${id}`, 'ID permis invalide.', 'error'); setBusy(`sug-${id}`, false); return; }
+      const { data: existing } = await sbClient.from('water_body_permits')
+        .select('permit_id').eq('water_body_id', wbId).eq('permit_id', permitId).limit(1);
+      if (!existing?.length) {
+        const { error } = await sbClient.from('water_body_permits').insert({ water_body_id: wbId, permit_id: permitId });
+        applyError = error;
+      }
     } else if (type === 'type_eau') {
       const { error } = await sbClient.from('water_bodies').update({ type: valeur }).eq('id', wbId);
       applyError = error;
