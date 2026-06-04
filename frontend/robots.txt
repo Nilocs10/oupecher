@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin.html
+Disallow: /favoris.html
+Disallow: /login.html
+
+Sitemap: https://oupecher.net/sitemap.xml
