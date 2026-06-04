@@ -27,6 +27,7 @@
       --green:      #22c55e;
       --red:        #f87171;
       --amber:      #fbbf24;
+      --teal:       #2dd4bf;
     }
 
     body {
@@ -50,112 +51,130 @@
     }
     nav {
       max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 64px;
+      display: flex; align-items: center; justify-content: space-between; height: 64px;
     }
     .logo { font-family: 'Lora', serif; font-size: 1.25rem; color: var(--blue-light); }
     .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-    .header-link { font-size: 0.88rem; color: var(--muted); padding: 0.4rem 0.6rem; border-radius: 6px; transition: color 0.15s, background 0.15s; }
-    .header-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-    .btn-cta { background: var(--blue); color: #fff; border-radius: 8px; padding: 0.45rem 1.1rem; font-size: 0.88rem; font-weight: 600; transition: background 0.15s; }
-    .btn-cta:hover { background: var(--blue-light); }
+    .header-link { font-size: 0.88rem; color: var(--muted); padding: 0.4rem 0.6rem; border-radius: 6px; transition: color 0.15s; }
+    .header-link:hover { color: var(--text); }
     #auth-nav { display: flex; align-items: center; gap: 0.5rem; }
     .auth-name { font-size: 0.82rem; color: var(--muted); }
-    .auth-btn-logout { font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; transition: color 0.15s; }
+    .auth-btn-logout { font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; }
     .auth-btn-logout:hover { color: #fca5a5; }
     .nav-sep { color: var(--muted); opacity: 0.4; font-weight: 300; user-select: none; pointer-events: none; }
+    .auth-btn-login { font-size: 0.85rem; color: var(--blue-light); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.9rem; }
 
     /* ── Main ── */
-    main { flex: 1; max-width: 860px; margin: 0 auto; width: 100%; padding: 2.5rem 1.5rem 4rem; }
+    main { flex: 1; max-width: 900px; margin: 0 auto; width: 100%; padding: 2.5rem 1.5rem 4rem; }
 
-    .page-title { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--blue-light); margin-bottom: 0.4rem; }
-    .page-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .page-title { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--blue-light); margin-bottom: 0.3rem; }
+    .page-sub   { color: var(--muted); font-size: 0.88rem; margin-bottom: 2.5rem; }
 
     #access-denied { display: none; text-align: center; padding: 4rem 1rem; color: var(--muted); }
     #access-denied h2 { font-family: 'Lora', serif; color: var(--red); margin-bottom: 0.5rem; }
 
+    /* ── Section titles ── */
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .section-count {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem; font-weight: 600;
+      background: var(--blue-glow); color: var(--blue-light);
+      border: 1px solid var(--blue); border-radius: 20px;
+      padding: 0.1rem 0.6rem;
+    }
+    .admin-section { margin-bottom: 3rem; }
+
     /* ── Spot cards ── */
-    .empty-msg { color: var(--muted); font-size: 0.95rem; padding: 2rem 0; }
+    .empty-msg { color: var(--muted); font-size: 0.9rem; padding: 1.5rem 0; }
 
     .spot-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem 1.4rem;
-      margin-bottom: 1rem;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 0.85rem;
       transition: opacity 0.3s, transform 0.3s;
     }
-    .spot-card.card-removed { opacity: 0; transform: translateY(-6px); }
+    .spot-card.card-removed { opacity: 0; transform: translateY(-6px); pointer-events: none; }
 
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; }
-    .card-title { font-size: 1.05rem; font-weight: 600; color: var(--text); }
-    .card-badge {
-      flex-shrink: 0;
-      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
-      background: var(--blue-glow); color: var(--blue-light);
-      border: 1px solid var(--blue); border-radius: 20px;
-      padding: 0.2rem 0.65rem;
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.45rem; }
+    .card-title  { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .card-badge  {
+      flex-shrink: 0; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      background: var(--blue-glow); color: var(--blue-light); border: 1px solid var(--blue);
+      border-radius: 20px; padding: 0.18rem 0.6rem;
     }
+    .card-badge.badge-espece   { background: rgba(34,197,94,0.08);  color: var(--green); border-color: rgba(34,197,94,0.3); }
+    .card-badge.badge-technique{ background: rgba(45,212,191,0.08); color: var(--teal);  border-color: rgba(45,212,191,0.3); }
+    .card-badge.badge-type_eau { background: rgba(251,191,36,0.08); color: var(--amber); border-color: rgba(251,191,36,0.3); }
 
-    .card-meta { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.65rem; }
-    .card-meta .coord { font-family: monospace; font-size: 0.78rem; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.55rem; }
+    .card-meta .coord { font-family: monospace; font-size: 0.76rem; }
 
-    .card-fish { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
-    .fish-tag {
-      font-size: 0.76rem; background: var(--surface-2);
-      border: 1px solid var(--border); border-radius: 20px;
-      padding: 0.15rem 0.55rem; color: var(--muted);
-    }
+    .card-fish   { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.6rem; }
+    .fish-tag    { font-size: 0.74rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: 20px; padding: 0.12rem 0.5rem; color: var(--muted); }
 
-    .card-society { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.65rem; }
+    .card-society { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.6rem; }
     .card-society strong { color: var(--text); }
+
+    /* Suggestion value display */
+    .suggestion-value {
+      display: inline-block;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.25rem 0.65rem;
+      font-size: 0.88rem; color: var(--text); margin-bottom: 0.5rem;
+    }
+    .card-spot-ref { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .card-spot-ref strong { color: var(--blue-light); }
 
     /* ── Proximity warning ── */
     .similar-warning {
-      background: rgba(251, 191, 36, 0.07);
-      border: 1px solid rgba(251, 191, 36, 0.3);
-      border-radius: 8px;
-      padding: 0.7rem 0.9rem;
-      font-size: 0.84rem;
-      color: var(--amber);
-      margin-bottom: 0.75rem;
-      display: flex; flex-direction: column; gap: 0.45rem;
+      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 8px; padding: 0.65rem 0.9rem;
+      font-size: 0.82rem; color: var(--amber); margin-bottom: 0.7rem;
+      display: flex; flex-direction: column; gap: 0.4rem;
     }
     .similar-warning-title { font-weight: 600; }
-    .similar-item { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-    .similar-name { color: var(--text); font-weight: 500; }
+    .similar-item  { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
+    .similar-name  { color: var(--text); font-weight: 500; }
     .btn-merge {
-      font-size: 0.78rem; font-weight: 600;
-      background: rgba(251, 191, 36, 0.12); color: var(--amber);
-      border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px;
-      padding: 0.25rem 0.7rem; cursor: pointer; font-family: inherit;
-      transition: background 0.15s;
+      font-size: 0.76rem; font-weight: 600;
+      background: rgba(251,191,36,0.1); color: var(--amber);
+      border: 1px solid rgba(251,191,36,0.35); border-radius: 6px;
+      padding: 0.22rem 0.65rem; cursor: pointer; font-family: inherit; transition: background 0.15s;
     }
-    .btn-merge:hover { background: rgba(251, 191, 36, 0.22); }
+    .btn-merge:hover { background: rgba(251,191,36,0.2); }
     .btn-merge:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ── Action buttons ── */
-    .card-actions { display: flex; gap: 0.65rem; margin-top: 0.85rem; }
+    .card-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; flex-wrap: wrap; }
     .btn-approve, .btn-reject {
-      font-size: 0.85rem; font-weight: 600;
-      border: none; border-radius: 8px;
-      padding: 0.5rem 1.1rem; cursor: pointer;
-      font-family: inherit; transition: background 0.15s, opacity 0.15s;
+      font-size: 0.83rem; font-weight: 600;
+      border-radius: 8px; padding: 0.45rem 1rem;
+      cursor: pointer; font-family: inherit; transition: background 0.15s, opacity 0.15s;
     }
-    .btn-approve { background: rgba(34, 197, 94, 0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-    .btn-approve:hover { background: rgba(34, 197, 94, 0.25); }
-    .btn-reject  { background: rgba(248, 113, 113, 0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
-    .btn-reject:hover  { background: rgba(248, 113, 113, 0.22); }
-    .btn-approve:disabled, .btn-reject:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-approve { background: rgba(34,197,94,0.14); color: var(--green); border: 1px solid rgba(34,197,94,0.28); }
+    .btn-approve:hover { background: rgba(34,197,94,0.24); }
+    .btn-reject  { background: rgba(248,113,113,0.11); color: var(--red);   border: 1px solid rgba(248,113,113,0.28); }
+    .btn-reject:hover  { background: rgba(248,113,113,0.2); }
+    .btn-approve:disabled, .btn-reject:disabled, .btn-merge:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .card-feedback { font-size: 0.8rem; margin-top: 0.4rem; min-height: 1.2em; }
-    .card-feedback.error { color: var(--red); }
+    .card-feedback { font-size: 0.78rem; margin-top: 0.35rem; min-height: 1.1em; }
+    .card-feedback.error   { color: var(--red); }
     .card-feedback.success { color: var(--green); }
 
     @media (max-width: 600px) {
       main { padding: 1.5rem 1rem 3rem; }
       .card-actions { flex-direction: column; }
-      .btn-approve, .btn-reject { width: 100%; }
+      .btn-approve, .btn-reject { width: 100%; text-align: center; }
     }
   </style>
 </head>
@@ -178,52 +197,96 @@
     </div>
 
     <div id="admin-content" style="display:none">
-      <h1 class="page-title">Modération des spots</h1>
-      <p class="page-sub" id="pending-count">Chargement…</p>
-      <div id="pending-list"></div>
+      <h1 class="page-title">Administration</h1>
+      <p class="page-sub">Modération des spots et suggestions de la communauté.</p>
+
+      <!-- Spots pending -->
+      <div class="admin-section">
+        <h2 class="section-title">
+          Spots en attente
+          <span class="section-count" id="pending-spots-count">…</span>
+        </h2>
+        <div id="pending-list"><p class="empty-msg">Chargement…</p></div>
+      </div>
+
+      <!-- Suggestions pending -->
+      <div class="admin-section">
+        <h2 class="section-title">
+          Suggestions de la communauté
+          <span class="section-count" id="pending-suggestions-count">…</span>
+        </h2>
+        <div id="suggestions-list"><p class="empty-msg">Chargement…</p></div>
+      </div>
     </div>
   </main>
 
   <script src="js/auth.js"></script>
   <script>
+  // ── Constantes ─────────────────────────────────────────────────────────────
   const ADMIN_EMAIL = 'nicolas.gomes10@hotmail.com';
 
-  // ── Utilitaires ────────────────────────────────────────────────────────────
+  const TYPE_LABELS = { espece: 'Espèce', technique: 'Technique', type_eau: "Type d'eau" };
+  const TYPE_CLASSES = { espece: 'badge-espece', technique: 'badge-technique', type_eau: 'badge-type_eau' };
+  const WATER_TYPE_LABELS = { river: 'Rivière', lake: 'Lac', pond: 'Étang', canal: 'Canal' };
+
   function _esc(s) {
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
 
   function haversineKm(lat1, lon1, lat2, lon2) {
-    const R   = 6371;
+    const R    = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2
-            + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
     return R * 2 * Math.asin(Math.sqrt(a));
   }
 
   // ── Chargement principal ───────────────────────────────────────────────────
   async function loadAdmin() {
     const { data: { session } } = await sbClient.auth.getSession();
+    console.log('[Admin] session email:', session?.user?.email);
 
     if (!session || session.user.email !== ADMIN_EMAIL) {
       document.getElementById('access-denied').style.display = 'block';
       return;
     }
-
     document.getElementById('admin-content').style.display = 'block';
 
-    // Spots en attente (avec leurs espèces)
+    await Promise.all([loadPendingSpots(), loadPendingSuggestions()]);
+  }
+
+  // ── SPOTS EN ATTENTE ───────────────────────────────────────────────────────
+  async function loadPendingSpots() {
+    // Requête simple — pas de nested select pour éviter les problèmes de FK non configurées
     const { data: pending, error: errP } = await sbClient
       .from('water_bodies')
-      .select('*, water_body_fish(fish_id, fish(name))')
+      .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
+    console.log('[Admin] spots pending:', pending, 'error:', errP);
+
     if (errP) {
       document.getElementById('pending-list').innerHTML =
-        `<p class="empty-msg" style="color:var(--red)">Erreur de chargement : ${_esc(errP.message)}</p>`;
+        `<p class="empty-msg" style="color:var(--red)">Erreur : ${_esc(errP.message)}</p>`;
+      document.getElementById('pending-spots-count').textContent = '!';
       return;
+    }
+
+    // Espèces pour chaque spot pending (requête séparée)
+    let fishMap = {};
+    if (pending?.length) {
+      const ids = pending.map(s => s.id);
+      const { data: fishLinks, error: errF } = await sbClient
+        .from('water_body_fish')
+        .select('water_body_id, fish(name)')
+        .in('water_body_id', ids);
+      console.log('[Admin] fish links:', fishLinks, 'error:', errF);
+      for (const row of (fishLinks || [])) {
+        const wbId = row.water_body_id;
+        if (!fishMap[wbId]) fishMap[wbId] = [];
+        if (row.fish?.name) fishMap[wbId].push(row.fish.name);
+      }
     }
 
     // Spots approuvés pour la détection de proximité
@@ -232,45 +295,38 @@
       .select('id, name, latitude, longitude')
       .or('status.is.null,status.eq.approved');
 
-    renderPending(pending || [], approved || []);
+    renderPendingSpots(pending || [], fishMap, approved || []);
   }
 
-  // ── Rendu ──────────────────────────────────────────────────────────────────
-  function renderPending(pending, approved) {
-    const countEl = document.getElementById('pending-count');
+  function renderPendingSpots(pending, fishMap, approved) {
+    const countEl = document.getElementById('pending-spots-count');
     const listEl  = document.getElementById('pending-list');
+    countEl.textContent = pending.length;
 
     if (!pending.length) {
-      countEl.textContent = 'Aucun spot en attente.';
-      listEl.innerHTML = '<p class="empty-msg">Tout est à jour — aucun spot à modérer.</p>';
+      listEl.innerHTML = '<p class="empty-msg">Aucun spot en attente.</p>';
       return;
     }
 
-    countEl.textContent = `${pending.length} spot(s) en attente de validation`;
     listEl.innerHTML = '';
-
     for (const spot of pending) {
-      const fish   = (spot.water_body_fish || []).map(r => r.fish?.name).filter(Boolean);
-      const nearby = (approved || []).filter(a =>
+      const fish   = fishMap[spot.id] || [];
+      const nearby = approved.filter(a =>
         a.id !== spot.id && haversineKm(spot.latitude, spot.longitude, a.latitude, a.longitude) < 0.2
       );
 
-      // Avertissement de proximité
-      let nearbyHTML = '';
-      if (nearby.length) {
-        const items = nearby.map(n => `
-          <div class="similar-item">
-            <span>Spot similaire existant :</span>
-            <span class="similar-name">${_esc(n.name)}</span>
-            <button class="btn-merge"
-              data-pending="${spot.id}"
-              data-approved="${n.id}"
-              data-aname="${_esc(n.name)}">
-              Fusionner les espèces
-            </button>
-          </div>`).join('');
-        nearbyHTML = `<div class="similar-warning"><div class="similar-warning-title">⚠ Doublon possible (< 200 m)</div>${items}</div>`;
-      }
+      const nearbyHTML = nearby.length ? `
+        <div class="similar-warning">
+          <div class="similar-warning-title">⚠ Doublon possible (< 200 m)</div>
+          ${nearby.map(n => `
+            <div class="similar-item">
+              <span>Spot similaire :</span>
+              <span class="similar-name">${_esc(n.name)}</span>
+              <button class="btn-merge" data-pending="${spot.id}" data-approved="${n.id}" data-aname="${_esc(n.name)}">
+                Fusionner les espèces
+              </button>
+            </div>`).join('')}
+        </div>` : '';
 
       const fishHTML = fish.length
         ? `<div class="card-fish">${fish.map(f => `<span class="fish-tag">${_esc(f)}</span>`).join('')}</div>`
@@ -282,65 +338,136 @@
 
       const card = document.createElement('div');
       card.className = 'spot-card';
-      card.id = `card-${spot.id}`;
+      card.id = `spot-card-${spot.id}`;
       card.innerHTML = `
         <div class="card-header">
           <div class="card-title">${_esc(spot.name)}</div>
-          <span class="card-badge">${_esc(spot.type)}</span>
+          <span class="card-badge">${_esc(WATER_TYPE_LABELS[spot.type] ?? spot.type)}</span>
         </div>
         <div class="card-meta">
           <span>${_esc(spot.region || '—')}</span>
           <span>${_esc(spot.country)}</span>
           <span class="coord">${spot.latitude.toFixed(5)}, ${spot.longitude.toFixed(5)}</span>
         </div>
-        ${fishHTML}
-        ${societyHTML}
-        ${nearbyHTML}
+        ${fishHTML}${societyHTML}${nearbyHTML}
         <div class="card-actions">
-          <button class="btn-approve" data-id="${spot.id}">✓ Approuver</button>
-          <button class="btn-reject"  data-id="${spot.id}">✕ Rejeter</button>
+          <button class="btn-approve" data-id="${spot.id}" data-kind="spot">✓ Approuver</button>
+          <button class="btn-reject"  data-id="${spot.id}" data-kind="spot">✕ Rejeter</button>
         </div>
-        <div class="card-feedback" id="fb-${spot.id}"></div>
+        <div class="card-feedback" id="fb-spot-${spot.id}"></div>
       `;
       listEl.appendChild(card);
     }
-
-    listEl.addEventListener('click', onAction);
+    listEl.addEventListener('click', onSpotAction);
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-  async function onAction(e) {
+  // ── SUGGESTIONS ────────────────────────────────────────────────────────────
+  async function loadPendingSuggestions() {
+    const { data: suggestions, error: errS } = await sbClient
+      .from('spot_suggestions')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    console.log('[Admin] suggestions pending:', suggestions, 'error:', errS);
+
+    if (errS) {
+      document.getElementById('suggestions-list').innerHTML =
+        `<p class="empty-msg" style="color:var(--red)">Erreur : ${_esc(errS.message)}</p>`;
+      document.getElementById('pending-suggestions-count').textContent = '!';
+      return;
+    }
+
+    // Noms des spots concernés
+    let wbNames = {};
+    if (suggestions?.length) {
+      const wbIds = [...new Set(suggestions.map(s => s.water_body_id))];
+      const { data: wbs } = await sbClient
+        .from('water_bodies')
+        .select('id, name')
+        .in('id', wbIds);
+      for (const wb of (wbs || [])) wbNames[wb.id] = wb.name;
+    }
+
+    renderSuggestions(suggestions || [], wbNames);
+  }
+
+  function renderSuggestions(suggestions, wbNames) {
+    const countEl = document.getElementById('pending-suggestions-count');
+    const listEl  = document.getElementById('suggestions-list');
+    countEl.textContent = suggestions.length;
+
+    if (!suggestions.length) {
+      listEl.innerHTML = '<p class="empty-msg">Aucune suggestion en attente.</p>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    for (const s of suggestions) {
+      const wbName    = wbNames[s.water_body_id] || `Spot #${s.water_body_id}`;
+      const typeLabel = TYPE_LABELS[s.type] || s.type;
+      const typeClass = TYPE_CLASSES[s.type] || '';
+      const valLabel  = s.type === 'type_eau'
+        ? (WATER_TYPE_LABELS[s.valeur] ?? s.valeur)
+        : s.valeur;
+
+      const card = document.createElement('div');
+      card.className = 'spot-card';
+      card.id = `sug-card-${s.id}`;
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-title">${_esc(typeLabel)}</div>
+          <span class="card-badge ${typeClass}">${_esc(typeLabel)}</span>
+        </div>
+        <div class="card-spot-ref">Spot : <strong>${_esc(wbName)}</strong></div>
+        <div class="suggestion-value">${_esc(valLabel)}</div>
+        <div class="card-actions">
+          <button class="btn-approve" data-id="${s.id}" data-kind="suggestion"
+            data-type="${_esc(s.type)}" data-valeur="${_esc(s.valeur)}"
+            data-wbid="${s.water_body_id}">✓ Approuver</button>
+          <button class="btn-reject"  data-id="${s.id}" data-kind="suggestion">✕ Rejeter</button>
+        </div>
+        <div class="card-feedback" id="fb-sug-${s.id}"></div>
+      `;
+      listEl.appendChild(card);
+    }
+    listEl.addEventListener('click', onSuggestionAction);
+  }
+
+  // ── Actions spots ──────────────────────────────────────────────────────────
+  async function onSpotAction(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
-    if (btn.classList.contains('btn-approve')) await approveSpot(+btn.dataset.id);
-    else if (btn.classList.contains('btn-reject'))  await rejectSpot(+btn.dataset.id);
-    else if (btn.classList.contains('btn-merge'))   await mergeSpots(+btn.dataset.pending, +btn.dataset.approved, btn.dataset.aname);
+    if (btn.classList.contains('btn-approve') && btn.dataset.kind === 'spot') {
+      await approveSpot(+btn.dataset.id);
+    } else if (btn.classList.contains('btn-reject') && btn.dataset.kind === 'spot') {
+      await rejectSpot(+btn.dataset.id);
+    } else if (btn.classList.contains('btn-merge')) {
+      await mergeSpots(+btn.dataset.pending, +btn.dataset.approved, btn.dataset.aname);
+    }
   }
 
   async function approveSpot(id) {
-    setBusy(id, true);
+    setBusy(`spot-${id}`, true);
     const { error } = await sbClient.from('water_bodies').update({ status: 'approved' }).eq('id', id);
-    if (error) { feedback(id, 'Erreur : ' + error.message, 'error'); setBusy(id, false); return; }
-    removeCard(id);
+    if (error) { feedback(`spot-${id}`, 'Erreur : ' + error.message, 'error'); setBusy(`spot-${id}`, false); return; }
+    removeCard(`spot-card-${id}`, 'pending-spots-count');
   }
 
   async function rejectSpot(id) {
     if (!confirm('Supprimer définitivement ce spot ?')) return;
-    setBusy(id, true);
+    setBusy(`spot-${id}`, true);
     const { error } = await sbClient.from('water_bodies').delete().eq('id', id);
-    if (error) { feedback(id, 'Erreur : ' + error.message, 'error'); setBusy(id, false); return; }
-    removeCard(id);
+    if (error) { feedback(`spot-${id}`, 'Erreur : ' + error.message, 'error'); setBusy(`spot-${id}`, false); return; }
+    removeCard(`spot-card-${id}`, 'pending-spots-count');
   }
 
   async function mergeSpots(pendingId, approvedId, approvedName) {
-    if (!confirm(`Fusionner les espèces de ce spot dans "${approvedName}" puis le supprimer ?`)) return;
-    setBusy(pendingId, true);
+    if (!confirm(`Fusionner les espèces dans "${approvedName}" puis supprimer ce spot ?`)) return;
+    setBusy(`spot-${pendingId}`, true);
 
-    // Espèces du spot en attente
     const { data: pendingFish }  = await sbClient.from('water_body_fish').select('fish_id').eq('water_body_id', pendingId);
-    // Espèces déjà présentes dans le spot approuvé
     const { data: approvedFish } = await sbClient.from('water_body_fish').select('fish_id').eq('water_body_id', approvedId);
-
     const existing = new Set((approvedFish || []).map(r => r.fish_id));
     const toAdd    = (pendingFish || []).filter(r => !existing.has(r.fish_id));
 
@@ -348,41 +475,97 @@
       const { error: errIns } = await sbClient.from('water_body_fish').insert(
         toAdd.map(r => ({ water_body_id: approvedId, fish_id: r.fish_id }))
       );
-      if (errIns) { feedback(pendingId, 'Erreur fusion : ' + errIns.message, 'error'); setBusy(pendingId, false); return; }
+      if (errIns) { feedback(`spot-${pendingId}`, 'Erreur fusion : ' + errIns.message, 'error'); setBusy(`spot-${pendingId}`, false); return; }
     }
 
-    // Supprimer le spot pending (CASCADE nettoie water_body_fish)
     const { error: errDel } = await sbClient.from('water_bodies').delete().eq('id', pendingId);
-    if (errDel) { feedback(pendingId, 'Erreur suppression : ' + errDel.message, 'error'); setBusy(pendingId, false); return; }
-
-    removeCard(pendingId);
+    if (errDel) { feedback(`spot-${pendingId}`, 'Erreur suppression : ' + errDel.message, 'error'); setBusy(`spot-${pendingId}`, false); return; }
+    removeCard(`spot-card-${pendingId}`, 'pending-spots-count');
   }
 
-  // ── Helpers UI ────────────────────────────────────────────────────────────
-  function setBusy(id, busy) {
-    document.getElementById(`card-${id}`)
+  // ── Actions suggestions ────────────────────────────────────────────────────
+  async function onSuggestionAction(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.classList.contains('btn-approve') && btn.dataset.kind === 'suggestion') {
+      await approveSuggestion(+btn.dataset.id, btn.dataset.type, btn.dataset.valeur, +btn.dataset.wbid);
+    } else if (btn.classList.contains('btn-reject') && btn.dataset.kind === 'suggestion') {
+      await rejectSuggestion(+btn.dataset.id);
+    }
+  }
+
+  async function approveSuggestion(id, type, valeur, wbId) {
+    setBusy(`sug-${id}`, true);
+
+    let applyError = null;
+
+    if (type === 'espece') {
+      // Chercher l'ID du poisson par son nom
+      const { data: fishRows } = await sbClient.from('fish').select('id').eq('name', valeur).limit(1);
+      if (!fishRows?.length) {
+        feedback(`sug-${id}`, `Espèce "${valeur}" introuvable en DB.`, 'error');
+        setBusy(`sug-${id}`, false); return;
+      }
+      const fishId = fishRows[0].id;
+      // Vérifier qu'elle n'est pas déjà liée
+      const { data: existing } = await sbClient.from('water_body_fish')
+        .select('fish_id').eq('water_body_id', wbId).eq('fish_id', fishId).limit(1);
+      if (!existing?.length) {
+        const { error } = await sbClient.from('water_body_fish').insert({ water_body_id: wbId, fish_id: fishId });
+        applyError = error;
+      }
+    } else if (type === 'technique') {
+      const { error } = await sbClient.from('water_body_techniques').insert({ water_body_id: wbId, technique: valeur });
+      applyError = error;
+    } else if (type === 'type_eau') {
+      const { error } = await sbClient.from('water_bodies').update({ type: valeur }).eq('id', wbId);
+      applyError = error;
+    }
+
+    if (applyError) {
+      feedback(`sug-${id}`, 'Erreur application : ' + applyError.message, 'error');
+      setBusy(`sug-${id}`, false); return;
+    }
+
+    // Marquer la suggestion comme approuvée
+    const { error: errUpd } = await sbClient.from('spot_suggestions').update({ status: 'approved' }).eq('id', id);
+    if (errUpd) { feedback(`sug-${id}`, 'Erreur statut : ' + errUpd.message, 'error'); setBusy(`sug-${id}`, false); return; }
+    removeCard(`sug-card-${id}`, 'pending-suggestions-count');
+  }
+
+  async function rejectSuggestion(id) {
+    setBusy(`sug-${id}`, true);
+    const { error } = await sbClient.from('spot_suggestions').update({ status: 'rejected' }).eq('id', id);
+    if (error) { feedback(`sug-${id}`, 'Erreur : ' + error.message, 'error'); setBusy(`sug-${id}`, false); return; }
+    removeCard(`sug-card-${id}`, 'pending-suggestions-count');
+  }
+
+  // ── Helpers UI ─────────────────────────────────────────────────────────────
+  function setBusy(key, busy) {
+    // key est 'spot-ID' ou 'sug-ID', card ID est 'spot-card-ID' ou 'sug-card-ID'
+    const prefix = key.startsWith('sug-') ? 'sug-card-' : 'spot-card-';
+    const suffix = key.startsWith('sug-') ? key.slice(4) : key.slice(5);
+    document.getElementById(`${prefix}${suffix}`)
       ?.querySelectorAll('button')
       .forEach(b => b.disabled = busy);
   }
 
-  function feedback(id, msg, type) {
-    const el = document.getElementById(`fb-${id}`);
+  function feedback(key, msg, type) {
+    const prefix = key.startsWith('sug-') ? 'fb-sug-' : 'fb-spot-';
+    const suffix = key.startsWith('sug-') ? key.slice(4) : key.slice(5);
+    const el = document.getElementById(`${prefix}${suffix}`);
     if (el) { el.textContent = msg; el.className = `card-feedback ${type}`; }
   }
 
-  function removeCard(id) {
-    const card = document.getElementById(`card-${id}`);
+  function removeCard(cardId, countElId) {
+    const card = document.getElementById(cardId);
     if (!card) return;
     card.classList.add('card-removed');
     setTimeout(() => {
       card.remove();
-      const remaining = document.querySelectorAll('.spot-card').length;
-      const countEl   = document.getElementById('pending-count');
-      if (countEl) countEl.textContent = `${remaining} spot(s) en attente de validation`;
-      if (!remaining) {
-        document.getElementById('pending-list').innerHTML = '<p class="empty-msg">Tout est à jour — aucun spot à modérer.</p>';
-        if (countEl) countEl.textContent = 'Aucun spot en attente.';
-      }
+      const remaining = card.parentElement?.querySelectorAll('.spot-card').length ?? 0;
+      const countEl   = document.getElementById(countElId);
+      if (countEl) countEl.textContent = remaining;
     }, 350);
   }
 

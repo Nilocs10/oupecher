@@ -1327,6 +1327,78 @@ header .tagline {
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* ── Section "Enrichir ce spot" dans le panneau ── */
+.enrich-section { padding-top: 0.25rem; }
+
+.enrich-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  border-radius: var(--radius);
+  padding: 0.38rem 0.85rem;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  width: 100%;
+  text-align: left;
+}
+.enrich-toggle:hover { border-color: var(--color-primary); color: var(--color-primary-light); background: rgba(34,211,184,0.05); }
+
+.enrich-form-wrapper {
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.enrich-type-tabs {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.enrich-type-btn {
+  font-size: 0.75rem; font-weight: 600;
+  background: none; border: 1px solid var(--color-border);
+  color: var(--color-text-muted); border-radius: 20px;
+  padding: 0.22rem 0.7rem; cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+.enrich-type-btn:hover { border-color: var(--color-primary); color: var(--color-primary-light); }
+.enrich-type-btn.active { background: rgba(34,211,184,0.1); border-color: var(--color-primary); color: var(--color-primary-light); }
+
+.enrich-field select,
+.enrich-field input[type="text"] {
+  width: 100%;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.7rem;
+  font-family: inherit; font-size: 0.85rem;
+  outline: none; transition: border-color 0.15s;
+}
+.enrich-field select:focus,
+.enrich-field input[type="text"]:focus { border-color: var(--color-primary); }
+
+.enrich-msg { font-size: 0.78rem; margin: 0.45rem 0 0; min-height: 1.1em; }
+.enrich-error   { color: #f87171; }
+.enrich-success { color: #4ade80; }
+
+.enrich-submit {
+  margin-top: 0.65rem;
+  width: 100%;
+  background: rgba(34,211,184,0.1);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-light);
+  border-radius: var(--radius);
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.enrich-submit:hover:not(:disabled) { background: rgba(34,211,184,0.18); }
+.enrich-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── Page fiche spot (spot.html) ── */
 body.spot-page {
   overflow: auto;

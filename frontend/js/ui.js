@@ -117,6 +117,123 @@ function renderPanel(wb) {
     e.preventDefault();
     await submitComment(wb.id);
   });
+
+  // Chargement différé du bouton Enrichir (nécessite auth)
+  initEnrichSection(wb);
+}
+
+async function initEnrichSection(wb) {
+  const el = document.getElementById("enrich-section");
+  if (!el || typeof sbClient === "undefined") return;
+
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) return;  // bouton invisible si non connecté
+
+  // Récupérer toutes les espèces disponibles
+  let allFish = [];
+  try { allFish = await getFishList(); } catch {}
+  const existing = new Set(wb.fish_species || []);
+  const newFish  = allFish.filter(f => !existing.has(f.name));
+  const fishOptions = newFish
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+    .map(f => `<option value="${esc(f.name)}">${esc(f.name)}</option>`)
+    .join("");
+
+  el.innerHTML = `
+    <div class="panel-section enrich-section">
+      <button class="enrich-toggle" id="enrich-toggle" type="button">✏ Enrichir ce spot</button>
+      <div id="enrich-form-wrapper" class="enrich-form-wrapper hidden">
+        <div class="enrich-type-tabs">
+          <button type="button" class="enrich-type-btn active" data-etype="espece">+ Espèce</button>
+          <button type="button" class="enrich-type-btn" data-etype="technique">+ Technique</button>
+          <button type="button" class="enrich-type-btn" data-etype="type_eau">Corriger le type</button>
+        </div>
+        <form id="enrich-form" novalidate>
+          <div id="enrich-field-espece" class="enrich-field">
+            <select id="enrich-fish-select">
+              <option value="">Choisir une espèce manquante…</option>
+              ${fishOptions}
+            </select>
+          </div>
+          <div id="enrich-field-technique" class="enrich-field hidden">
+            <input type="text" id="enrich-tech-input"
+              placeholder="Ex : Pêche à la traîne, Float tube…" maxlength="100" autocomplete="off">
+          </div>
+          <div id="enrich-field-type_eau" class="enrich-field hidden">
+            <select id="enrich-type-select">
+              <option value="">Choisir le bon type…</option>
+              <option value="river">Rivière</option>
+              <option value="lake">Lac</option>
+              <option value="pond">Étang</option>
+              <option value="canal">Canal</option>
+            </select>
+          </div>
+          <div id="enrich-msg" class="enrich-msg"></div>
+          <button type="submit" id="enrich-submit" class="enrich-submit">Soumettre la suggestion</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  let currentType = "espece";
+
+  // Toggle ouverture/fermeture du formulaire
+  el.querySelector("#enrich-toggle").addEventListener("click", () => {
+    el.querySelector("#enrich-form-wrapper").classList.toggle("hidden");
+  });
+
+  // Sélection du type de suggestion
+  el.querySelectorAll(".enrich-type-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentType = btn.dataset.etype;
+      el.querySelectorAll(".enrich-type-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      el.querySelectorAll(".enrich-field").forEach(f => f.classList.add("hidden"));
+      el.querySelector(`#enrich-field-${currentType}`).classList.remove("hidden");
+      el.querySelector("#enrich-msg").textContent = "";
+    });
+  });
+
+  // Soumission
+  el.querySelector("#enrich-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msgEl    = el.querySelector("#enrich-msg");
+    const submitBtn = el.querySelector("#enrich-submit");
+
+    let valeur = "";
+    if (currentType === "espece")    valeur = el.querySelector("#enrich-fish-select").value;
+    else if (currentType === "technique") valeur = el.querySelector("#enrich-tech-input").value.trim();
+    else if (currentType === "type_eau")  valeur = el.querySelector("#enrich-type-select").value;
+
+    if (!valeur) {
+      msgEl.textContent = "Veuillez remplir le champ.";
+      msgEl.className = "enrich-msg enrich-error";
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Envoi…";
+    msgEl.textContent = "";
+
+    const { data: { session: s } } = await sbClient.auth.getSession();
+    const { error } = await sbClient.from("spot_suggestions").insert({
+      water_body_id: wb.id,
+      user_id:       s.user.id,
+      type:          currentType,
+      valeur,
+    });
+
+    if (error) {
+      msgEl.textContent = "Erreur : " + error.message;
+      msgEl.className = "enrich-msg enrich-error";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Soumettre la suggestion";
+    } else {
+      msgEl.textContent = "Suggestion envoyée, merci !";
+      msgEl.className = "enrich-msg enrich-success";
+      submitBtn.textContent = "Envoyé ✓";
+    }
+  });
 }
 
 function buildInfoHTML(wb) {
@@ -160,6 +277,7 @@ function buildInfoHTML(wb) {
         <a href="${waze}"  target="_blank" rel="noopener noreferrer" class="nav-btn nav-btn--waze">Waze →</a>
       </div>
     </div>
+    <div id="enrich-section"></div>
   `;
 }
 
