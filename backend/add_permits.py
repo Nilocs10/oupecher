@@ -37,6 +37,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 _URL_WAL   = "https://permisdepeche.be/fr/home"
 _URL_VLA   = "https://natuurenbos.vlaanderen.be/vissen-en-hengelen/visverlof/types-visverlof"
 _URL_BXL   = "https://environnement.brussels/citoyen/reglementation-et-inspection/obligations-et-autorisations/pecher-bruxelles#le-permis-de-peche"
+_URL_FR    = "https://www.cartedepeche.fr"
 
 PERMITS = [
     # ── Wallonie ──────────────────────────────────────────────────────────────
@@ -104,6 +105,14 @@ PERMITS = [
         "description": "Pêche de jour depuis la rive, 2 cannes, appâts vivants autorisés.",
         "price_eur": 23.44,
         "url": _URL_BXL,
+    },
+    # ── France ────────────────────────────────────────────────────────────────
+    {
+        "name": "Carte de Pêche FR",
+        "country": "FR",
+        "description": "Obligatoire pour pêcher en France. Prix variable selon les départements et associations. Les conditions peuvent varier.",
+        "price_eur": None,
+        "url": _URL_FR,
     },
 ]
 
