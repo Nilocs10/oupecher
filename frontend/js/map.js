@@ -14,7 +14,7 @@ function initMap() {
 
   // CartoDB Voyager — fond clair, rivières en bleu natif, routes discrètes, sans clé API
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_55l4_1_9c0df2263878310ce0092305",,
     {
       attribution:
         '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
