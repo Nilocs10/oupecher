@@ -33,9 +33,9 @@
       <div id="nomSite">
         <p>OùPêcher</p>
       </div>
-      <div id="menuNav">
-        <a href="index2.html">Accueil</a>
-        <a>Carte</a>
+      <div id="menuNav" class="nav-right">
+        <a href="landing.html">Accueil</a>
+        <a href="index.html">Carte</a>
         <a href="especes.html">Espèces</a>
         <a href="techniques.html">Techniques</a>
         <a href="permis.html">Permis</a>
@@ -43,14 +43,33 @@
         <a href="contact.html">Contact</a>
       </div>
       <div>
-        <button class="profilButton">Profil</button>
+        <button class="profilButton nav-right">Profil</button>
       </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <a href="landing.html" class="mobile-menu-link">Accueil</a>
+      <div id="mobile-fav-section"></div>
+      <a href="index.html" class="mobile-menu-link">Carte</a>
+      <div id="mobile-fav-section"></div>
+      <a href="especes.html" class="mobile-menu-link">Espèces</a>
+      <div id="mobile-fav-section"></div>
+      <a href="techniques.html" class="mobile-menu-link">Techniques</a>
+      <div id="mobile-fav-section"></div>
+      <a href="permis.html" class="mobile-menu-link">Permis</a>
+      <div id="mobile-fav-section"></div>
+      <a href="galerie.html" class="mobile-menu-link">Galerie</a>
+      <div id="mobile-fav-section"></div>
+      <a href="contact.html" class="mobile-menu-link">Contact</a>
+      <div id="mobile-auth-section"></div>
+    </div>
   </header>
   <div class="bandeau-info">
-      🚧 OuPêcher fait peau neuve ! Certaines fonctionnalités
-      sont temporairement indisponibles pendant la refonte.
-      Merci pour votre patience.
+    🚧 OuPêcher fait peau neuve ! Certaines fonctionnalités
+    sont temporairement indisponibles pendant la refonte.
+    Merci pour votre patience.
   </div>
   <section>
     <div id="accueil">
@@ -127,10 +146,68 @@
         <li><a href="index.html">Carte</a></li>
         <li><a href="legal.html">Mentions légales</a></li>
       </ul>
-      <p class="footer-copy">© 2026 OùPêcher · Belgique &amp; France</p>
+      <p class="footer-copy">© 2026 OùPêcher · Belgique et France</p>
     </div>
   </footer>
 
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // ── Hamburger toggle ──────────────────────────────────────────────────────
+    const _hBtn = document.getElementById("hamburger-btn");
+    const _hMenu = document.getElementById("mobile-menu");
+
+    _hBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = _hMenu.classList.toggle("open");
+      _hBtn.classList.toggle("open", open);
+      _hBtn.setAttribute("aria-expanded", String(open));
+      _hMenu.setAttribute("aria-hidden", String(!open));
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!_hMenu.contains(e.target) && e.target !== _hBtn) {
+        _hMenu.classList.remove("open");
+        _hBtn.classList.remove("open");
+        _hBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // ── Auth dans le menu mobile ──────────────────────────────────────────────
+    function _mesc(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function renderMobileAuth(session) {
+      const favSec = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
+      if (session) {
+        const name = session.user.user_metadata?.username
+          || session.user.email.split("@")[0];
+        const adminRow = session.user.email === "nicolas.gomes10@hotmail.com"
+          ? `<a href="admin.html" class="mobile-menu-link" style="color:var(--blue-light);font-size:0.85rem">Admin</a>`
+          : "";
+        if (favSec) favSec.innerHTML = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
+          ${adminRow}
+          <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>
+          <span class="mobile-menu-user">${_mesc(name)}</span>`;
+        document.getElementById("mob-logout")?.addEventListener("click", async () => {
+          await sbClient.auth.signOut();
+        });
+      } else {
+        if (favSec) favSec.innerHTML = "";
+        if (authSec) authSec.innerHTML = `
+          <a href="login.html"            class="mobile-menu-link">Connexion</a>`;
+      }
+    }
+
+    if (typeof sbClient !== "undefined") {
+      // onAuthStateChange fires immediately with the current session, then on every change
+      sbClient.auth.onAuthStateChange((_event, session) => renderMobileAuth(session));
+    }
+  </script>
 </body>
 
 </html>

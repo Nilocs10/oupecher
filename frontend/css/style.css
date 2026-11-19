@@ -288,7 +288,30 @@ nav {
       .hero h1 { font-size: 1.85rem; }
       .features-grid { grid-template-columns: 1fr; }
       .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
-      section { padding: 3.5rem 0; }
+      section { padding: 0 0; }
+      #accueil h1 {
+        font-size: 2rem;
+    }
+    
+    #cartes ul {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    #cartes li {
+        width: 90%;
+        box-sizing: border-box;
+    }
+    
+    #accueil {
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+  }
+  
+  #accueil h1 {
+      font-size: 2rem;
+  }
     }
 
     /* ── Hamburger (mobile) ── */
@@ -322,26 +345,26 @@ nav {
     .mobile-menu {
       display: none;
       flex-direction: column;
-      border-top: 1px solid var(--border);
-      padding: 0.4rem 1.5rem 1rem;
+      border: 1px solid var(--text);
     }
     .mobile-menu.open { display: flex; }
 
     .mobile-menu-link {
       display: block;
-      padding: 0.8rem 0;
+      padding: 0.4rem 0;
       font-size: 0.95rem;
       font-weight: 500;
       color: var(--text);
       text-decoration: none;
       border: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      background: none;
+      border-bottom: 1px solid var(--text);
+      background: var(--blocs);
       cursor: pointer;
       font-family: inherit;
       text-align: left;
       width: 100%;
       transition: color 0.15s;
+      padding-left: 0.5rem;
     }
     .mobile-menu-link:last-child { border-bottom: none; }
     .mobile-menu-link:hover { color: var(--blue-light); }
@@ -350,10 +373,10 @@ nav {
     .mobile-menu-user {
       display: block;
       font-size: 0.8rem;
-      color: var(--text-muted);
+      color: var(--text);
       padding: 0.6rem 0 0.1rem;
     }
-    .mobile-menu-logout { color: var(--text-muted); }
+    .mobile-menu-logout { color: var(--text); }
     .mobile-menu-logout:hover { color: #fca5a5 !important; }
 
     .mobile-menu-cta {
