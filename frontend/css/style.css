@@ -17,9 +17,6 @@ body {
   color: var(--text);
   font-family: 'Times New Roman', Times, serif;
   background-color: var(--fondPrincipal);
-
-
-
 }
 
 
@@ -142,14 +139,15 @@ nav {
   border-radius: 666px;
   font-size: 1.5rem;
   padding: 0.5rem 1.5rem;
-  background-color: var(--button);
+  background-color: var(--text);
   border-color: var(--border);
-  color: #FFFFFF;
+  color: var(--blocs);
 }
 
 .goMapButton:hover {
   background-color: var(--border);
   color: var(--text);
+  cursor: pointer;
 }
 
 .fonctionButton {
@@ -157,12 +155,13 @@ nav {
   border-radius: 666px;
   font-size: 1.5rem;
   padding: 0.5rem 1.5rem;
-  border-color: var(--button);
+  border-color: var(--blocs);
   color: var(--text);
 }
 
 .fonctionButton:hover {
   background-color: var(--border);
+  cursor: pointer;
 }
 
 .profilButton {
@@ -172,6 +171,7 @@ nav {
   border-radius: 666px;
   padding: 0.75rem 0.75rem;
   font-size: 1.5rem;
+  cursor: pointer;
 }
 
 .profilButton:hover {
@@ -180,11 +180,17 @@ nav {
 
 #cartes {
   font-size: 1.5rem;
-  color: var(--text);
+  color: var(--blocs);
+  margin-bottom: 5rem;
 
   h2 {
     margin-top: 4%;
     padding-left: 10%;
+    color: var(--text);
+  }
+  h4{
+    padding-left: 10%;
+    color: var(--text);
   }
 
   ul {
@@ -194,15 +200,18 @@ nav {
     justify-content: center;
     padding-right: 5%;
     padding-left: 5%;
+    grid-template-columns: repeat(3, 1fr);
+
   }
 
   li {
     border: 2px solid var(--button);
     margin: 1rem;
     text-align: center;
-    width: 28%;
+    width: 35%;
     box-sizing: border-box;
     border-radius: 20px;
+    background-color: var(--text);
   }
 
   p {
@@ -220,3 +229,167 @@ nav {
     transform: translateY(-4px);
     box-shadow: 10px 6px 18px rgba(18, 48, 85, 0.671);
 }
+
+.bandeau-info{
+    background-color: #e8f2fc;
+    color: #102b4e;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 20px;
+    border-bottom: 1px solid #b8d4ed;
+}
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.5rem;
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 1rem;
+      color: var(--text);
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-copy {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 4.5rem 0 4rem; }
+      .hero h1 { font-size: 1.85rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      section { padding: 3.5rem 0; }
+    }
+
+    /* ── Hamburger (mobile) ── */
+    .hamburger-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 6px;
+      color: var(--text);
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .hamburger-btn:hover { background: var(--blue-glow); }
+    .hamburger-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 1px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      padding: 0.4rem 1.5rem 1rem;
+    }
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu-link {
+      display: block;
+      padding: 0.8rem 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
+      transition: color 0.15s;
+    }
+    .mobile-menu-link:last-child { border-bottom: none; }
+    .mobile-menu-link:hover { color: var(--blue-light); }
+    #mobile-fav-section > .mobile-menu-link { border-bottom: 1px solid rgba(255,255,255,0.07); }
+
+    .mobile-menu-user {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.6rem 0 0.1rem;
+    }
+    .mobile-menu-logout { color: var(--text-muted); }
+    .mobile-menu-logout:hover { color: #fca5a5 !important; }
+
+    .mobile-menu-cta {
+      margin-top: 0.5rem;
+      text-align: center;
+      background: var(--blue-glow);
+      border: 1px solid var(--blue) !important;
+      color: var(--blue-light) !important;
+      border-radius: 8px;
+      padding: 0.65rem !important;
+      font-weight: 600;
+    }
+
+    /* Séparateurs nav desktop */
+    .nav-sep {
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-weight: 300;
+      user-select: none;
+      pointer-events: none;
+      margin: 0 0.45rem;
+    }
+
+    /* Séparateur entre Permis et le bloc auth */
+    .nav-right #auth-nav:not(:empty)::before {
+      content: '|';
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-weight: 300;
+      user-select: none;
+      pointer-events: none;
+      margin: 0 0.45rem;
+    }
+
+    @media (max-width: 640px) {
+      .nav-right { display: none; }
+      .hamburger-btn { display: flex; }
+      .nav-sep { display: none; }
+    }
