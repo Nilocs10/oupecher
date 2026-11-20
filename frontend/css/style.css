@@ -214,7 +214,7 @@ nav {
     width: 35%;
     box-sizing: border-box;
     border-radius: 20px;
-    background-color: var(--text);
+    background-color: var(--text);    
   }
 
   p {
@@ -226,11 +226,23 @@ nav {
 #cartes li {
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
+    position: relative;
 }
 
 #cartes li:hover {
     transform: translateY(-4px);
     box-shadow: 10px 6px 18px rgba(18, 48, 85, 0.671);
+}
+
+#cartes li a {
+    color: inherit;
+    text-decoration: none;
+}
+
+#cartes li a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
 }
 
 .bandeau-info{
@@ -420,3 +432,90 @@ nav {
       .hamburger-btn { display: flex; }
       .nav-sep { display: none; }
     }
+
+#pageContact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+font-size: 1.3rem;
+margin-top: 2rem;
+margin-bottom: 2rem;
+}
+
+
+
+    #contactezNous {
+  margin: 1rem;
+  padding: 1rem;
+    }
+
+    #ongletMessage {
+  border: 3px solid var(--text);
+  margin: 1rem;
+  padding: 1rem;
+border-radius: 12px;
+
+    }
+#basOngletMessage {
+  display: flex;
+  margin: 1rem;
+  justify-content: space-between;
+  
+  button {
+    border: 1px solid var(--detail);
+    background-color: var(--text) ;
+    border-radius: 666px;
+    color: var(--blocs);
+    font-size: 1rem;
+  padding: 0.5rem 1.5rem;
+    border-color: var(--border);
+
+
+  }
+  button:hover {
+  background-color: var(--button);
+  color: var(--blocs);
+  cursor: pointer;
+}
+}
+
+#formulaire {
+  padding: 1rem;
+
+  label {
+    display: block;
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+
+  input {
+    border: 1px solid var(--detail);
+    border-radius: 12px;
+    width: 100%;
+    height: 30px;
+margin-bottom: 10px;
+  }
+
+  #messageQuestionnaire{
+    width: 100%;
+    height: 12rem;
+    resize: none;
+    border: 1px solid var(--detail);
+    border-radius: 12px;
+  }
+
+  input,
+textarea,
+button,
+select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 5px;
+}
+}
+
+nav a.active {
+    border-bottom: 3px solid var(--button);
+    padding-bottom: 6px;
+}
