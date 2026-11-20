@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google-site-verification" content="3S5Wx_YJstbMwgywYo5nJ8mGICnxDT7w4NOJEKN0lHY" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Carte interactive de pêche en Belgique et France</title>
+  <meta name="description"
+    content="Trouve les meilleurs spots de pêche en Belgique et en France. Espèces, permis et techniques par spot. Gratuit et mis à jour par la communauté." />
+  <meta name="keywords"
+    content="pêche, spots pêche, carte pêche, Belgique, France, permis pêche, rivière, lac, étang, canal, espèces poissons" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://oupecher.net/" />
+  <meta property="og:title" content="OùPêcher – Carte interactive de pêche en Belgique et France" />
+  <meta property="og:description"
+    content="Trouve les meilleurs spots de pêche en Belgique et en France. Espèces, permis et techniques par spot. Gratuit et mis à jour par la communauté." />
+  <meta property="og:image" content="https://oupecher.net/og-image.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+  <header>
+    <nav>
+      <div id="nomSite">
+        <p>OùPêcher</p>
+      </div>
+      <div id="menuNav" class="nav-right">
+        <a href="landing.html">Accueil</a>
+        <a href="index.html">Carte</a>
+        <a href="construction.html">Espèces</a>
+        <a href="construction.html">Techniques</a>
+        <a href="permis.html">Permis</a>
+        <a href="construction.html">Galerie</a>
+        <a href="construction.html">Contact</a>
+      </div>
+      <div>
+        <button class="profilButton nav-right">Profil</button>
+      </div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <a href="landing.html" class="mobile-menu-link">Accueil</a>
+      <div id="mobile-fav-section"></div>
+      <a href="index.html" class="mobile-menu-link">Carte</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Espèces</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Techniques</a>
+      <div id="mobile-fav-section"></div>
+      <a href="permis.html" class="mobile-menu-link">Permis</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Galerie</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Contact</a>
+      <div id="mobile-auth-section"></div>
+    </div>
+  </header>
+  <div class="bandeau-info">
+    🚧 OuPêcher fait peau neuve ! Certaines fonctionnalités
+    sont temporairement indisponibles pendant la refonte.
+    Merci pour votre patience.
+  </div>
+ 
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-logo">OùPêcher</div>
+      <ul class="footer-links">
+        <li><a href="#features">Fonctionnalités</a></li>
+        <li><a href="index.html">Carte</a></li>
+        <li><a href="legal.html">Mentions légales</a></li>
+      </ul>
+      <p class="footer-copy">© 2026 OùPêcher · Belgique et France</p>
+    </div>
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // ── Hamburger toggle ──────────────────────────────────────────────────────
+    const _hBtn = document.getElementById("hamburger-btn");
+    const _hMenu = document.getElementById("mobile-menu");
+
+    _hBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = _hMenu.classList.toggle("open");
+      _hBtn.classList.toggle("open", open);
+      _hBtn.setAttribute("aria-expanded", String(open));
+      _hMenu.setAttribute("aria-hidden", String(!open));
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!_hMenu.contains(e.target) && e.target !== _hBtn) {
+        _hMenu.classList.remove("open");
+        _hBtn.classList.remove("open");
+        _hBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // ── Auth dans le menu mobile ──────────────────────────────────────────────
+    function _mesc(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function renderMobileAuth(session) {
+      const favSec = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
+      if (session) {
+        const name = session.user.user_metadata?.username
+          || session.user.email.split("@")[0];
+        const adminRow = session.user.email === "nicolas.gomes10@hotmail.com"
+          ? `<a href="admin.html" class="mobile-menu-link" style="color:var(--blue-light);font-size:0.85rem">Admin</a>`
+          : "";
+        if (favSec) favSec.innerHTML = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
+          ${adminRow}
+          <button class="mobile-menu-link mobile-menu-logout" id="mob-logout">Déconnexion</button>
+          <span class="mobile-menu-user">${_mesc(name)}</span>`;
+        document.getElementById("mob-logout")?.addEventListener("click", async () => {
+          await sbClient.auth.signOut();
+        });
+      } else {
+        if (favSec) favSec.innerHTML = "";
+        if (authSec) authSec.innerHTML = `
+          <a href="login.html"            class="mobile-menu-link">Connexion</a>`;
+      }
+    }
+
+    if (typeof sbClient !== "undefined") {
+      // onAuthStateChange fires immediately with the current session, then on every change
+      sbClient.auth.onAuthStateChange((_event, session) => renderMobileAuth(session));
+    }
+  </script>
+</body>
+
+</html>

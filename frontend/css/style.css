@@ -17,6 +17,9 @@ body {
   color: var(--text);
   font-family: 'Times New Roman', Times, serif;
   background-color: var(--fondPrincipal);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -243,6 +246,7 @@ nav {
     footer {
       border-top: 1px solid var(--border);
       padding: 1rem 0;
+      margin-top: auto;
     }
 
     .footer-inner {
