@@ -19,33 +19,56 @@
   <!-- Supabase JS (auth) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <link rel="stylesheet" href="css/style-old.css" />
-</head>
-<body>
+  <link rel="stylesheet" href="css/style.css">
+<body class="page-carte">
 
-  <header>
-    <h1><a href="landing.html" class="header-logo-link">OùPêcher</a></h1>
-    <span class="tagline">Carte interactive de pêche – Belgique &amp; France</span>
-    <a href="permis.html" class="header-link" style="margin-left:auto">Permis</a>
-    <div id="auth-nav" class="header-auth" style="margin-left:0"></div>
-    <span id="api-status" class="api-badge demo">● Chargement…</span>
-    <button id="filters-toggle" class="filters-toggle-btn" aria-label="Filtres" aria-expanded="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-           stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-      </svg>
-      <span id="filters-toggle-label">Filtres</span>
-    </button>
-    <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+ <header>
+    <nav>
+      <div id="nomSite">
+        <p>OùPêcher</p>
+      </div>
+      <div id="menuNav" class="nav-right">
+        <a href="landing.html">Accueil</a>
+        <a href="index.html" class="active">Carte</a>
+        <a href="construction.html">Espèces</a>
+        <a href="construction.html">Techniques</a>
+        <a href="permis.html">Permis</a>
+        <a href="construction.html">Galerie</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div>
+        <button class="profilButton nav-right">Profil</button>
+      </div>
+      <button id="filters-toggle" type="button" aria-expanded="false">
+  <span id="filters-toggle-label">Filtres</span>
+</button>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <a href="landing.html" class="mobile-menu-link">Accueil</a>
+      <div id="mobile-fav-section"></div>
+      <a href="index.html" class="mobile-menu-link">Carte</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Espèces</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Techniques</a>
+      <div id="mobile-fav-section"></div>
+      <a href="permis.html" class="mobile-menu-link">Permis</a>
+      <div id="mobile-fav-section"></div>
+      <a href="construction.html" class="mobile-menu-link">Galerie</a>
+      <div id="mobile-fav-section"></div>
+      <a href="contact.html" class="mobile-menu-link">Contact</a>
+      <div id="mobile-auth-section"></div>
+    </div>
   </header>
-  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-    <a href="index.html"   class="mobile-menu-link active">Explorer la carte →</a>
-    <div id="mobile-fav-section"></div>
-    <a href="permis.html"  class="mobile-menu-link">Permis</a>
-    <div id="mobile-auth-section"></div>
+  <div class="bandeau-info">
+    🚧 OuPêcher fait peau neuve ! Certaines fonctionnalités
+    sont temporairement indisponibles pendant la refonte.
+    Merci pour votre patience.
   </div>
+
 
   <div id="filters">
     <label for="filter-country">Pays</label>
@@ -216,11 +239,6 @@
               <input type="checkbox" name="technique" value="Feeder"> Feeder
             </label>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>Statut</label>
-          <div class="status-badge-pending">En attente de validation</div>
         </div>
 
         <div id="propose-error" class="hidden"></div>
@@ -558,8 +576,7 @@
       } else {
         if (favSec)  favSec.innerHTML  = "";
         if (authSec) authSec.innerHTML = `
-          <a href="login.html"            class="mobile-menu-link">Connexion</a>
-          <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
+  <a href="login.html" class="mobile-menu-link">Connexion</a>`;
       }
     }
 

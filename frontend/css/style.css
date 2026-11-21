@@ -519,3 +519,500 @@ nav a.active {
     border-bottom: 3px solid var(--button);
     padding-bottom: 6px;
 }
+
+.hidden {
+  display: none;
+}
+
+.page-carte {
+  height: 100dvh;
+  min-height: 0;
+}
+
+.page-carte #app {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.page-carte #map {
+  height: 100%;
+}
+
+.page-carte #propose-btn {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+    font-family: inherit;
+  font-size: 1.1rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background-color: var(--text);
+  color: var(--fondPrincipal);
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+}
+
+.page-carte #filters-toggle {
+  display: none;
+}
+
+.page-carte #filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.page-carte #filters select,
+.page-carte #filter-favs {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--fondPrincipal);
+  border: 1px solid var(--text);
+  border-radius: 12px;
+  padding: 0.4rem 0.75rem;
+}
+
+.page-carte #filter-favs {
+  cursor: pointer;
+}
+
+.page-carte #filters select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%),
+    linear-gradient(135deg, var(--text) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) center,
+    calc(100% - 10px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.page-carte #propose-btn:hover {
+  background-color: var(--button);
+}
+
+.page-carte #propose-btn-hint {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background-color: var(--text);
+  color: var(--fondPrincipal);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.page-carte #propose-btn:hover #propose-btn-hint,
+.page-carte #propose-btn:focus-visible #propose-btn-hint,
+.page-carte #propose-btn.active #propose-btn-hint {
+  display: block;
+}
+
+.page-carte #propose-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.page-carte #propose-overlay.hidden {
+  display: none;
+}
+
+.page-carte #propose-modal {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: 1.25rem;
+  background-color: var(--fondPrincipal);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  .page-carte #filters-toggle {
+    display: block;
+  margin: 0 0.75rem 0 auto;
+  padding: 0.4rem 0.9rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--fondPrincipal);
+  border: 1px solid var(--text);
+  border-radius: 12px;
+  cursor: pointer;
+  }
+
+  
+
+  .page-carte .bandeau-info {
+  font-size: 0.85rem;
+  line-height: 1.3;
+  padding: 0.4rem 0.75rem;
+}
+
+  .page-carte #filters {
+    display: none;
+    max-height: 35dvh;
+    overflow-y: auto;
+  }
+
+  .page-carte #filters.filters-open {
+    display: flex;
+  }
+}
+
+.page-carte #propose-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  position: sticky;
+  top: -1.25rem;
+  z-index: 1;
+  background-color: var(--fondPrincipal);
+  padding-block: 0.75rem;
+}
+
+.page-carte #propose-modal-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.page-carte #propose-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.page-carte #propose-form .form-group > label {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.page-carte #propose-form input:not([type="checkbox"]),
+.page-carte #propose-form select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.6rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--fondPrincipal);
+  border: 1px solid var(--text);
+  border-radius: 12px;
+}
+
+.page-carte #propose-form .form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.page-carte #propose-form .checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.page-carte #propose-fish-group {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.page-carte .fish-loading-msg {
+  grid-column: 1 / -1;
+}
+
+.page-carte #propose-submit {
+  width: 100%;
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: var(--text);
+  color: var(--fondPrincipal);
+  border: 1px solid var(--text);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.page-carte #propose-submit:hover {
+  background-color: var(--text);
+}
+
+.page-carte #panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  max-width: 100%;
+  box-sizing: border-box;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--fondPrincipal);
+  border-left: 1px solid var(--text);
+}
+
+.page-carte #panel.hidden {
+  display: none;
+}
+
+.page-carte #panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.page-carte #panel-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.page-carte #panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Afficher uniquement l’onglet sélectionné */
+.page-carte #panel .tab-content {
+  display: none;
+}
+
+.page-carte #panel .tab-content.active {
+  display: block;
+}
+
+/* Barre des onglets */
+.page-carte .panel-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.page-carte .tab-btn {
+  flex: 1;
+  padding: 0.65rem 0.25rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.page-carte .tab-btn.active {
+  border-bottom-color: var(--text);
+  font-weight: bold;
+}
+
+/* Espacement des rubriques */
+.page-carte .panel-section {
+  margin-top: 1.5rem;
+}
+
+.page-carte .panel-section h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+/* Étiquettes des espèces et techniques */
+.page-carte #panel .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.page-carte #panel .tag {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+/* Liens vers la fiche et les itinéraires */
+.page-carte #panel .btn-spot-page,
+.page-carte #panel .nav-btn {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  border: 1px solid var(--text);
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.page-carte #panel .btn-spot-page {
+  display: block;
+  text-align: center;
+}
+
+.page-carte #panel .nav-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page-carte #panel .btn-spot-page:hover,
+.page-carte #panel .nav-btn:hover {
+  background-color: var(--text);
+  color: var(--blocs);
+}
+
+.page-carte #panel-header {
+  background-color: var(--fondSecondaire);
+}
+
+.page-carte .panel-header-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.page-carte #fav-btn,
+.page-carte #panel-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 1.2rem;
+  color: var(--text);
+  background-color: var(--fondPrincipal);
+  border: 1px solid var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.page-carte #fav-btn:hover,
+.page-carte #panel-close:hover {
+  background-color: var(--text);
+  color: var(--fondPrincipal);
+}
+
+.page-carte #rating-user a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.page-carte #rating-user a:hover {
+  text-decoration: underline;
+}
+
+.page-carte #panel .tag.fish {
+  background-color: var(--fondSecondaire);
+}
+
+.page-carte #panel .btn-spot-page {
+  background-color: var(--text);
+  color: var(--fondPrincipal);
+}
+
+.page-carte #panel .btn-spot-page:hover {
+  background-color: var(--button);
+}
+
+.page-carte #panel .photo-login-hint {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.page-carte #panel .photo-login-hint:hover {
+  text-decoration: underline;
+}
+
+/* Formulaire de commentaire */
+.page-carte #comment-form {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--text);
+}
+
+.page-carte #comment-form h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.page-carte #comment-form input,
+.page-carte #comment-form textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.65rem;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--fondSecondaire);
+  border: 1px solid var(--text);
+  border-radius: 12px;
+}
+
+.page-carte #comment-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Actions des deux onglets */
+.page-carte #comment-submit,
+.page-carte #panel .upload-btn {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-family: inherit;
+  font-size: 1rem;
+  text-align: center;
+  color: var(--fondPrincipal);
+  background-color: var(--text);
+  border: 1px solid var(--text);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.page-carte #comment-submit:hover,
+.page-carte #panel .upload-btn:hover {
+  background-color: var(--button);
+}
+
+@media (max-width: 640px) {
+  .page-carte #panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 80%;
+    border-left: none;
+    border-top: 1px solid var(--text);
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+  }
+}

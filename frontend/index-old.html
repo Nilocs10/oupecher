@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OùPêcher – Carte interactive de pêche en Belgique et France</title>
+  <meta name="description" content="Trouve les meilleurs spots de pêche en Belgique et en France. Espèces, permis et techniques par spot. Gratuit et mis à jour par la communauté." />
+  <meta name="keywords" content="carte pêche, spots pêche, rivière, lac, étang, canal, Belgique, France, carpe, truite, brochet, sandre" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://oupecher.net/index.html" />
+  <meta property="og:title" content="OùPêcher – Carte interactive de pêche en Belgique et France" />
+  <meta property="og:description" content="Trouve les meilleurs spots de pêche en Belgique et en France. Espèces, permis et techniques par spot. Gratuit et mis à jour par la communauté." />
+  <meta property="og:image" content="https://oupecher.net/og-image.png" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase JS (auth) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <link rel="stylesheet" href="css/style-old.css" />
+</head>
+<body>
+
+  <header>
+    <h1><a href="landing.html" class="header-logo-link">OùPêcher</a></h1>
+    <span class="tagline">Carte interactive de pêche – Belgique &amp; France</span>
+    <a href="permis.html" class="header-link" style="margin-left:auto">Permis</a>
+    <div id="auth-nav" class="header-auth" style="margin-left:0"></div>
+    <span id="api-status" class="api-badge demo">● Chargement…</span>
+    <button id="filters-toggle" class="filters-toggle-btn" aria-label="Filtres" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      <span id="filters-toggle-label">Filtres</span>
+    </button>
+    <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <a href="index.html"   class="mobile-menu-link active">Explorer la carte →</a>
+    <div id="mobile-fav-section"></div>
+    <a href="permis.html"  class="mobile-menu-link">Permis</a>
+    <div id="mobile-auth-section"></div>
+  </div>
+
+  <div id="filters">
+    <label for="filter-country">Pays</label>
+    <select id="filter-country">
+      <option value="">Tous</option>
+      <option value="BE">Belgique</option>
+      <option value="FR">France</option>
+    </select>
+
+    <label for="filter-type">Type</label>
+    <select id="filter-type">
+      <option value="">Tous</option>
+      <option value="river">Rivière</option>
+      <option value="lake">Lac</option>
+      <option value="pond">Étang</option>
+      <option value="canal">Canal</option>
+      <option value="sea">Mer / Plage</option>
+    </select>
+
+    <label for="filter-fish">Espèce</label>
+    <select id="filter-fish">
+      <option value="">Toutes</option>
+    </select>
+
+    <label for="filter-technique" style="display:none">Technique</label>
+    <select id="filter-technique" style="display:none">
+      <option value="">Toutes</option>
+      <option value="mouche">Mouche</option>
+      <option value="spinning">Spinning</option>
+      <option value="coup">Coup</option>
+      <option value="carnassier">Carnassier</option>
+      <option value="lancer">Lancer</option>
+      <option value="nuit">Nuit</option>
+      <option value="feeder">Feeder</option>
+    </select>
+
+    <label for="filter-permit">Permis</label>
+    <select id="filter-permit">
+      <option value="">Tous</option>
+    </select>
+
+    <button id="filter-favs" class="filter-fav-btn" title="Afficher uniquement mes spots favoris">
+      ♥ Mes favoris
+    </button>
+  </div>
+
+  <div id="app">
+    <div id="map"></div>
+
+    <!-- Bouton flottant -->
+    <button id="propose-btn" title="Activez puis cliquez sur la carte pour proposer un spot">
+      <span id="propose-btn-label">+ Proposer un spot</span>
+      <span id="propose-btn-hint">Appuyez sur la carte à l'endroit souhaité</span>
+    </button>
+
+    <aside id="panel" class="hidden">
+      <div id="panel-header">
+        <div>
+          <div id="panel-title">–</div>
+          <div id="panel-subtitle"></div>
+        </div>
+        <div class="panel-header-actions">
+          <button id="fav-btn" class="fav-btn" aria-label="Ajouter aux favoris" title="Favoris">♡</button>
+          <button id="panel-close" aria-label="Fermer">✕</button>
+        </div>
+      </div>
+      <div id="panel-body"></div>
+    </aside>
+  </div>
+
+  <!-- Modal : Proposer un spot -->
+  <div id="propose-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="propose-modal-title">
+    <div id="propose-modal">
+      <div id="propose-modal-header">
+        <h2 id="propose-modal-title">Proposer un spot de pêche</h2>
+        <button id="propose-close-btn" type="button" aria-label="Fermer">✕</button>
+      </div>
+      <form id="propose-form" novalidate>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="propose-lat">Latitude</label>
+            <input type="number" id="propose-lat" step="any" readonly required>
+          </div>
+          <div class="form-group">
+            <label for="propose-lng">Longitude</label>
+            <input type="number" id="propose-lng" step="any" readonly required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="propose-name">Nom du spot *</label>
+          <input type="text" id="propose-name" required placeholder="Ex : Ourthe à Hamoir">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="propose-type">Type d'eau *</label>
+            <select id="propose-type" required>
+              <option value="">Choisir…</option>
+              <option value="river">Rivière</option>
+              <option value="lake">Lac</option>
+              <option value="pond">Étang</option>
+              <option value="canal">Canal</option>
+              <option value="sea">Mer / Plage</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="propose-country">Pays *</label>
+            <select id="propose-country" required>
+              <option value="">Choisir…</option>
+              <option value="BE">Belgique</option>
+              <option value="FR">France</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Espèces présentes</label>
+          <div class="checkbox-group fish-checkbox-group" id="propose-fish-group">
+            <span class="fish-loading-msg">Chargement des espèces…</span>
+          </div>
+          <label class="checkbox-item checkbox-item--autre">
+            <input type="checkbox" id="fish-autre-check"> Autre espèce
+          </label>
+          <input type="text" id="fish-autre-text" class="hidden"
+            placeholder="Nom de l'espèce non listée" maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label for="propose-permit">Permis requis</label>
+          <select id="propose-permit">
+            <option value="">Aucun permis spécifique</option>
+            <!-- peuplé depuis /api/permits/ -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="private-society-check"> Société de pêche privée requise
+          </label>
+          <input type="text" id="private-society-name" class="hidden"
+            placeholder="Nom de la société (ex : Club de pêche local)" maxlength="150">
+        </div>
+
+        <div class="form-group">
+          <label>Techniques autorisées</label>
+          <div class="checkbox-group" id="propose-techniques-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche à la mouche"> Mouche
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Spinning"> Spinning
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche au coup"> Coup
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Carnassier"> Carnassier
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche au lancer"> Lancer
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Pêche de nuit"> Nuit
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="technique" value="Feeder"> Feeder
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Statut</label>
+          <div class="status-badge-pending">En attente de validation</div>
+        </div>
+
+        <div id="propose-error" class="hidden"></div>
+        <button type="submit" id="propose-submit">Soumettre le spot</button>
+
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/favorites.js"></script>
+  <script src="js/ratings.js"></script>
+  <script src="js/photos.js"></script>
+  <script>
+    initMap();
+    loadWaterBodies().then(() => {
+      // Centrage sur un spot depuis favoris.html (?spot=ID&lat=X&lng=Y&name=N)
+      const p = new URLSearchParams(window.location.search);
+      const lat = parseFloat(p.get("lat"));
+      const lng = parseFloat(p.get("lng"));
+      const spotId = parseInt(p.get("spot"));
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.setView([lat, lng], 14);
+        if (spotId) {
+          openWaterBodyPanel(spotId, decodeURIComponent(p.get("name") || "Spot"));
+        }
+      }
+    });
+
+    const countrySelect   = document.getElementById("filter-country");
+    const typeSelect      = document.getElementById("filter-type");
+    const fishSelect      = document.getElementById("filter-fish");
+    const techniqueSelect = document.getElementById("filter-technique");
+    const permitSelect    = document.getElementById("filter-permit");
+
+    // Peuple uniquement le filtre Espèce (le formulaire charge ses espèces à l'ouverture)
+    getFishList()
+      .then(species => {
+        species
+          .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+          .forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f.name;
+            opt.textContent = f.name;
+            fishSelect.appendChild(opt);
+          });
+      })
+      .catch(() => {});
+
+    // Peuple le filtre Permis (barre) ET le select du formulaire depuis /api/permits/
+    let _allPermits = [];
+
+    function updateProposePermits(country) {
+      const sel = document.getElementById("propose-permit");
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Aucun permis spécifique</option>';
+      const list = country
+        ? _allPermits.filter(p => p.country === country)
+        : _allPermits;
+      list.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = String(p.id);
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+      if (current && list.some(p => String(p.id) === current)) sel.value = current;
+    }
+
+    getPermits()
+      .then(permits => {
+        _allPermits = permits;
+        permits.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          permitSelect.appendChild(opt);
+        });
+        updateProposePermits("");
+      })
+      .catch(() => {});
+
+    let favFilterActive = false;
+
+    function updateFilterCount() {
+      const n = [countrySelect, typeSelect, fishSelect, techniqueSelect, permitSelect]
+        .filter(s => s.value).length + (favFilterActive ? 1 : 0);
+      const label = document.getElementById("filters-toggle-label");
+      if (label) label.textContent = n > 0 ? `Filtres (${n})` : "Filtres";
+    }
+
+    async function applyFilters() {
+      updateFilterCount();
+      if (favFilterActive) await favoritesReady();
+      loadWaterBodies({
+        country:        countrySelect.value   || undefined,
+        type:           typeSelect.value      || undefined,
+        fish:           fishSelect.value      || undefined,
+        technique:      techniqueSelect.value || undefined,
+        permit_id:      permitSelect.value    || undefined,
+        favorites_only: favFilterActive       || undefined,
+      });
+    }
+
+    countrySelect.addEventListener("change", applyFilters);
+    typeSelect.addEventListener("change", applyFilters);
+    fishSelect.addEventListener("change", applyFilters);
+    techniqueSelect.addEventListener("change", applyFilters);
+    permitSelect.addEventListener("change", applyFilters);
+
+    // ── Chargement différé des espèces pour le formulaire ─────────────────────
+    // Toggle "Autre espèce" text input
+    document.getElementById("fish-autre-check").addEventListener("change", (e) => {
+      const txt = document.getElementById("fish-autre-text");
+      txt.classList.toggle("hidden", !e.target.checked);
+      if (!e.target.checked) txt.value = "";
+    });
+
+    document.getElementById("private-society-check").addEventListener("change", (e) => {
+      const txt = document.getElementById("private-society-name");
+      txt.classList.toggle("hidden", !e.target.checked);
+      if (!e.target.checked) txt.value = "";
+    });
+
+    let _proposeFishLoaded = false;
+
+    function loadProposeFormFish() {
+      if (_proposeFishLoaded) return;
+      const group = document.getElementById("propose-fish-group");
+
+      getFishList()
+        .then(species => {
+          _proposeFishLoaded = true;
+          group.innerHTML = "";
+          species
+            .sort((a, b) => a.name.localeCompare(b.name, "fr"))
+            .forEach(f => {
+              const label = document.createElement("label");
+              label.className = "checkbox-item";
+              const cb = document.createElement("input");
+              cb.type = "checkbox";
+              cb.name = "fish";
+              cb.value = f.id;
+              label.appendChild(cb);
+              label.appendChild(document.createTextNode(" " + f.name));
+              group.appendChild(label);
+            });
+        })
+        .catch(() => {
+          group.innerHTML = '<span class="fish-loading-msg">Espèces non disponibles (API hors ligne)</span>';
+        });
+    }
+
+    // ── Proposer un spot ──────────────────────────────────────────────────────
+    let proposeMode = false;
+
+    const proposeBtn      = document.getElementById("propose-btn");
+    const proposeOverlay  = document.getElementById("propose-overlay");
+    const proposeForm     = document.getElementById("propose-form");
+    const proposeCloseBtn = document.getElementById("propose-close-btn");
+    const proposeLatInput = document.getElementById("propose-lat");
+    const proposeLngInput = document.getElementById("propose-lng");
+    const proposeError    = document.getElementById("propose-error");
+    const proposeSubmit   = document.getElementById("propose-submit");
+    const mapEl           = document.getElementById("map");
+
+    const proposeBtnLabel = document.getElementById("propose-btn-label");
+
+    proposeBtn.addEventListener("click", () => {
+      proposeMode = !proposeMode;
+      proposeBtn.classList.toggle("active", proposeMode);
+      mapEl.classList.toggle("propose-active", proposeMode);
+      proposeBtnLabel.textContent = proposeMode ? "+ Proposer un spot ici" : "+ Proposer un spot";
+    });
+
+    // Appelé depuis map.js quand proposeMode est actif et que l'utilisateur clique sur la carte
+    function openProposeForm(lat, lng) {
+      proposeLatInput.value = lat.toFixed(6);
+      proposeLngInput.value = lng.toFixed(6);
+      proposeError.classList.add("hidden");
+      proposeOverlay.classList.remove("hidden");
+      proposeMode = false;
+      proposeBtn.classList.remove("active");
+      mapEl.classList.remove("propose-active");
+      proposeBtnLabel.textContent = "+ Proposer un spot";
+      loadProposeFormFish();
+      document.getElementById("propose-name").focus();
+    }
+
+    proposeCloseBtn.addEventListener("click", () => {
+      proposeOverlay.classList.add("hidden");
+    });
+
+    document.getElementById("propose-country").addEventListener("change", (e) => {
+      updateProposePermits(e.target.value);
+    });
+
+    document.getElementById("propose-type").addEventListener("change", (e) => {
+      const permitSel = document.getElementById("propose-permit");
+      if (e.target.value === "sea") {
+        permitSel.value = "";
+        permitSel.disabled = true;
+        permitSel.title = "Aucun permis requis pour la mer / plage";
+      } else {
+        permitSel.disabled = false;
+        permitSel.title = "";
+      }
+    });
+
+    proposeOverlay.addEventListener("click", (e) => {
+      if (e.target === proposeOverlay) proposeOverlay.classList.add("hidden");
+    });
+
+    proposeForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      proposeError.classList.add("hidden");
+
+      const name    = document.getElementById("propose-name").value.trim();
+      const type    = document.getElementById("propose-type").value;
+      const country = document.getElementById("propose-country").value;
+
+      if (!name || !type || !country) {
+        proposeError.textContent = "Veuillez remplir tous les champs obligatoires (*).";
+        proposeError.classList.remove("hidden");
+        return;
+      }
+
+      const fish_ids = Array.from(
+        document.querySelectorAll('#propose-fish-group input[type="checkbox"]:checked')
+      ).map(cb => parseInt(cb.value)).filter(n => !isNaN(n));
+
+      const autreChecked    = document.getElementById("fish-autre-check").checked;
+      const autreText       = document.getElementById("fish-autre-text").value.trim();
+      const free_fish_names = autreChecked && autreText ? [autreText] : [];
+
+      const permitVal  = document.getElementById("propose-permit").value;
+      const permit_ids = permitVal ? [parseInt(permitVal)] : [];
+
+      const techniques = Array.from(
+        document.querySelectorAll('#propose-techniques-group input[name="technique"]:checked')
+      ).map(cb => cb.value);
+
+      const societyChecked = document.getElementById("private-society-check").checked;
+      const private_society_name = societyChecked
+        ? document.getElementById("private-society-name").value.trim()
+        : null;
+
+      proposeSubmit.textContent = "Envoi…";
+      proposeSubmit.disabled = true;
+
+      try {
+        const newSpot = await createWaterBody({
+          name, type, country,
+          latitude:  parseFloat(proposeLatInput.value),
+          longitude: parseFloat(proposeLngInput.value),
+          fish_ids, free_fish_names, permit_ids, techniques,
+          private_society_name,
+        });
+
+        // Si l'utilisateur est admin, approuver immédiatement le spot
+        let autoApproved = false;
+        const { data: { session: curSession } } = await sbClient.auth.getSession();
+        if (curSession?.user?.email === ADMIN_EMAIL && newSpot?.id) {
+          await sbClient.from("water_bodies").update({ status: "approved" }).eq("id", newSpot.id);
+          autoApproved = true;
+        }
+
+        proposeOverlay.classList.add("hidden");
+        proposeForm.reset();
+        document.getElementById("fish-autre-text").classList.add("hidden");
+        document.getElementById("private-society-name").classList.add("hidden");
+        const msg = autoApproved
+          ? "Spot ajouté et approuvé directement sur la carte !"
+          : "Spot soumis avec succès ! Il apparaîtra sur la carte après validation.";
+        showToast(msg);
+        if (autoApproved) applyFilters();
+      } catch {
+        proposeError.textContent = "Erreur lors de l'envoi — vérifiez que l'API est accessible.";
+        proposeError.classList.remove("hidden");
+      } finally {
+        proposeSubmit.textContent = "Soumettre le spot";
+        proposeSubmit.disabled = false;
+      }
+    });
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "propose-toast";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    // ── Hamburger toggle ─────────────────────────────────────────────────────
+    (function () {
+      const hBtn  = document.getElementById("hamburger-btn");
+      const hMenu = document.getElementById("mobile-menu");
+      if (!hBtn || !hMenu) return;
+      hBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = hMenu.classList.toggle("open");
+        hBtn.classList.toggle("open", open);
+        hBtn.setAttribute("aria-expanded", String(open));
+        hMenu.setAttribute("aria-hidden", String(!open));
+      });
+      document.addEventListener("click", (e) => {
+        if (!hMenu.contains(e.target) && e.target !== hBtn) {
+          hMenu.classList.remove("open");
+          hBtn.classList.remove("open");
+          hBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+    })();
+
+    // ── Menu mobile — rendu auth ──────────────────────────────────────────────
+    function _mi(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function renderMobileMenu(session) {
+      const favSec  = document.getElementById("mobile-fav-section");
+      const authSec = document.getElementById("mobile-auth-section");
+      if (session) {
+        const name     = session.user.user_metadata?.username || session.user.email.split("@")[0];
+        const isAdmin  = session.user.email === ADMIN_EMAIL;
+        const adminRow = isAdmin ? `<a href="admin.html" class="mobile-menu-link" style="color:var(--color-primary-light);font-size:0.85rem">Admin</a>` : "";
+        if (favSec)  favSec.innerHTML  = `<a href="favoris.html" class="mobile-menu-link">♥ Mes favoris</a>`;
+        if (authSec) authSec.innerHTML = `
+          ${adminRow}
+          <button class="mobile-menu-link mobile-menu-logout" id="_mob-out">Déconnexion</button>
+          <span class="mobile-menu-user">${_mi(name)}</span>`;
+        document.getElementById("_mob-out")?.addEventListener("click", () => sbClient.auth.signOut());
+      } else {
+        if (favSec)  favSec.innerHTML  = "";
+        if (authSec) authSec.innerHTML = `
+          <a href="login.html"            class="mobile-menu-link">Connexion</a>
+          <a href="login.html?register=1" class="mobile-menu-link mobile-menu-cta">Inscription</a>`;
+      }
+    }
+
+    // ── Bouton ♥ favoris dans les filtres ────────────────────────────────────
+    const favFilterBtn = document.getElementById("filter-favs");
+
+    favFilterBtn.addEventListener("click", async () => {
+      favFilterActive = !favFilterActive;
+      favFilterBtn.classList.toggle("active", favFilterActive);
+      await applyFilters();
+    });
+
+    if (typeof sbClient !== "undefined") {
+      sbClient.auth.onAuthStateChange((_event, session) => {
+        favFilterBtn.classList.toggle("fav-btn-visible", !!session);
+        if (!session && favFilterActive) {
+          favFilterActive = false;
+          favFilterBtn.classList.remove("active");
+          applyFilters();
+        }
+        renderMobileMenu(session);
+
+        // Marqueurs pending visibles uniquement pour l'admin
+        if (session?.user?.email === ADMIN_EMAIL) {
+          loadPendingSpots();
+        } else {
+          clearPendingMarkers();
+        }
+      });
+    }
+
+    // ── Filtres toggle (mobile) ───────────────────────────────────────────────
+    document.getElementById("filters-toggle").addEventListener("click", () => {
+      const filtersEl = document.getElementById("filters");
+      const btn       = document.getElementById("filters-toggle");
+      const isOpen    = filtersEl.classList.toggle("filters-open");
+      btn.setAttribute("aria-expanded", String(isOpen));
+      btn.classList.toggle("active", isOpen);
+    });
+  </script>
+
+</body>
+</html>
